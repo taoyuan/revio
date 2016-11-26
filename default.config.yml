@@ -1,0 +1,17 @@
+port: 80
+ssl:
+  port: 443
+  http2: true
+letsencrypt:
+  path: '{{base}}/certs'
+  port: 9999
+  production: false
+#routes:
+# - [example.com, http://127.0.0.1:8080, {
+#    ssl: {
+#      letsencrypt: {
+#        email: 'evoxy@example.com',
+#        production: false,
+#      }
+#    }
+#  }]

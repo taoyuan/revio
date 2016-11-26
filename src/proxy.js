@@ -1,18 +1,28 @@
 'use strict';
 
 const _ = require('lodash');
+const util = require('util');
 const configure = require('./configure');
 const validate = require('./validate');
 
-module.exports = (config, options) => {
+module.exports = (file, options) => {
 
-	if (typeof config === 'string') {
-		config = configure.load(config);
+	if (typeof file === 'object') {
+		options = file;
+		file = null;
 	}
 
-	options = _.merge({port: 8080}, config, options);
+	const config = configure.load(file);
+
+	options = _.merge({
+		port: 8080
+	}, config, options);
 
 	validate(options);
+
+	console.log('-----------');
+	console.log(util.inspect(options, {colors: true, depth: null}));
+	console.log('-----------');
 
 	const {routes} = options;
 
