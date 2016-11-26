@@ -7,7 +7,7 @@ module.exports = function () {
 	program
 		.version(require('../package').version)
 		.usage('[options]')
-		.option('-c, --config', 'Configuration file specifying');
+		.option('-c, --config', 'configuration file specifying');
 
 	program.parse(process.argv);
 

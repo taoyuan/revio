@@ -15,30 +15,19 @@ $ npm install --save evoxy
 ```js
 const evoxy = require('evoxy');
 
-evoxy('unicorns');
-//=> 'unicorns & rainbows'
+evoxy();
 ```
 
 
 ## API
 
-### evoxy(input, [options])
+### evoxy(config)
 
-#### input
+#### config
 
 Type: `string`
 
-Lorem ipsum.
-
-#### options
-
-##### foo
-
-Type: `boolean`<br>
-Default: `false`
-
-Lorem ipsum.
-
+Configuration file path
 
 ## CLI
 
@@ -47,19 +36,15 @@ $ npm install --global evoxy
 ```
 
 ```
-$ evoxy --help
+$ evo --help
 
-  Usage
-    evoxy [input]
+  Usage: evo [options]
 
-  Options
-    --foo  Lorem ipsum [Default: false]
+  Options:
 
-  Examples
-    $ evoxy
-    unicorns & rainbows
-    $ evoxy ponies
-    ponies & rainbows
+    -h, --help     output usage information
+    -V, --version  output the version number
+    -c, --config   configuration file specifying
 ```
 
 
