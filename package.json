@@ -14,7 +14,7 @@
     "evo": "./bin/evo.js"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=6"
   },
   "main": "./src/index",
   "scripts": {
