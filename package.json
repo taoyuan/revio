@@ -20,8 +20,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "./node_modules/.bin/mocha test/**/*.test.js",
-    "posttest": "npm run lint && nsp check",
-    "postinstall": "node ./scripts/install"
+    "posttest": "npm run lint && nsp check"
   },
   "keywords": [
     "reverse",
