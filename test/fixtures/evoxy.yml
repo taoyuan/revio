@@ -5,13 +5,11 @@ ssl:
 letsencrypt:
   path: '{{base}}/certs'
   port: 9999
-  production: true
+  prod: false
+  challenge: 'tls-sni-01' # http-01, tls-sni-01, or dns-01
 routes:
-  - [example.com, 10.0.0.123:6789, {
-      ssl: {
-        letsencrypt: {
-          email: 'john@example.com',
-          production: true
-        }
-      }
-    }]
+  - example.com:
+      backend: http://127.0.0.1:8080
+      ssl:
+        letsencrypt:
+          email: 'evoxy@example.com'

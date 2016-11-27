@@ -1,7 +1,6 @@
 "use strict";
 
-exports = module.exports = require('./proxy');
+exports = module.exports = require('./evoxy');
 
-exports.Configure = require('./configure/index');
-exports.configure = require('./configure');
-
+exports.Configure = require('./configure');
+exports.Reverser = require('./reverser');

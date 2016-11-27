@@ -1,7 +1,6 @@
 # evoxy [![Build Status](https://travis-ci.org/taoyuan/evoxy.svg?branch=master)](https://travis-ci.org/taoyuan/evoxy)
 
-> A reverse proxy server based on redbird
-
+> A reverse proxy server
 
 ## Install
 
@@ -47,6 +46,9 @@ $ evo --help
     -c, --config   configuration file specifying
 ```
 
+## Creds
+
+* [OptimalBits](https://github.com/OptimalBits)
 
 ## License
 

@@ -29,22 +29,37 @@
     "letsencrypt"
   ],
   "dependencies": {
+    "bluebird": "^3.4.6",
+    "bunyan": "^1.8.5",
     "commander": "^2.9.0",
+    "dolphin": "*",
     "fs-extra": "^1.0.0",
     "glob": "^7.1.1",
     "handlebars": "^4.0.6",
+    "http-proxy": "^1.15.2",
     "joi": "^10.0.1",
     "js-yaml": "^3.7.0",
     "json5": "^0.5.0",
+    "le-challenge-fs": "^2.0.8",
+    "le-challenge-sni": "^2.0.1",
+    "le-sni-auto": "^2.1.0",
+    "le-store-certbot": "^2.0.3",
+    "letsencrypt": "^2.1.8",
+    "localhost.daplie.com-certificates": "^1.2.3",
     "lodash": "^4.17.2",
+    "lru-cache": "^4.0.1",
     "node-alias": "^1.0.4",
+    "node-etcd": "^5.0.3",
+    "object-hash": "^1.1.5",
     "os-homedir": "^1.0.2",
-    "redbird": "^0.6.7"
+    "safetimeout": "^0.1.1",
+    "spdy": "^3.4.4",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
-    "eslint": "^3.10.2",
+    "eslint": "^3.11.0",
     "mocha": "^3.2.0",
     "nsp": "^2.6.2"
   }

@@ -1,9 +1,8 @@
 "use strict";
 
 const assert = require('chai').assert;
-const configure = require('../').configure;
-
 const home = require('os-homedir')();
+const configure = require('../').Configure('evoxy');
 
 describe('configure', () => {
 

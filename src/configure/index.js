@@ -53,4 +53,5 @@ class Configure {
 	}
 }
 
-exports = module.exports = Configure;
+exports = module.exports = name => new Configure(name);
+exports.Configure = Configure;
