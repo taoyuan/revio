@@ -29,6 +29,49 @@ let respondNotFound = function (req, res) {
 
 class Reverser {
 
+	static buildTarget(target, opts) {
+		opts = opts || {};
+		target = utils.prepareUrl(target);
+		target.sslRedirect = !opts.ssl || opts.ssl.redirect !== false;
+		target.useTargetHostHeader = opts.useTargetHostHeader === true;
+		return target;
+	}
+
+	static buildRoute(route) {
+		if (!_.isString(route) && !_.isObject(route)) {
+			return null;
+		}
+
+		if (_.isObject(route) && route.hasOwnProperty('urls') && route.hasOwnProperty('path')) {
+			// default route type matched.
+			return route;
+		}
+
+		const cacheKey = _.isString(route) ? route : hash(route);
+		const entry = routeCache.get(cacheKey);
+		if (entry) {
+			return entry;
+		}
+
+		const routeObject = {rr: 0, isResolved: true};
+		if (_.isString(route)) {
+			routeObject.urls = [Reverser.buildTarget(route)];
+			routeObject.path = '/';
+		} else {
+			if (!route.hasOwnProperty('url')) {
+				return null;
+			}
+
+			routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
+				return Reverser.buildTarget(url, route.opts || {});
+			});
+
+			routeObject.path = route.path || '/';
+		}
+		routeCache.set(cacheKey, routeObject);
+		return routeObject;
+	}
+
 	constructor(opts) {
 		this.opts = opts = opts || {};
 
@@ -375,7 +418,7 @@ class Reverser {
 				}
 			}
 		}
-		target = buildTarget(target, opts);
+		target = Reverser.buildTarget(target, opts);
 
 		const hosts = routing[src.hostname] = routing[src.hostname] || [];
 		const pathname = src.pathname || '/';
@@ -471,7 +514,7 @@ class Reverser {
 		let route;
 		const resolved = _.find(this.resolvers, resolver => {
 			route = resolver.call(this, host, url);
-			route = route && buildRoute(route);
+			route = route && Reverser.buildRoute(route);
 			// ensure resolved route has path that prefixes URL
 			// no need to check for native routes.
 			if (route && (!route.isResolved || route.path === '/' || utils.startsWith(url, route.path))) {
@@ -499,48 +542,5 @@ class Reverser {
 
 }
 
-
-function buildTarget(target, opts) {
-	opts = opts || {};
-	target = utils.prepareUrl(target);
-	target.sslRedirect = !opts.ssl || opts.ssl.redirect !== false;
-	target.useTargetHostHeader = opts.useTargetHostHeader === true;
-	return target;
-}
-
-function buildRoute(route) {
-	if (!_.isString(route) && !_.isObject(route)) {
-		return null;
-	}
-
-	if (_.isObject(route) && route.hasOwnProperty('urls') && route.hasOwnProperty('path')) {
-		// default route type matched.
-		return route;
-	}
-
-	const cacheKey = _.isString(route) ? route : hash(route);
-	const entry = routeCache.get(cacheKey);
-	if (entry) {
-		return entry;
-	}
-
-	const routeObject = {rr: 0, isResolved: true};
-	if (_.isString(route)) {
-		routeObject.urls = [buildTarget(route)];
-		routeObject.path = '/';
-	} else {
-		if (!route.hasOwnProperty('url')) {
-			return null;
-		}
-
-		routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
-			return buildTarget(url, route.opts || {});
-		});
-
-		routeObject.path = route.path || '/';
-	}
-	routeCache.set(cacheKey, routeObject);
-	return routeObject;
-}
 
 module.exports = Reverser;
