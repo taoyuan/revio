@@ -17,21 +17,18 @@ module.exports = function () {
 		.description('install some necessary files to system')
 		.action(() => {
 			require('../scripts/install');
-		});
-
-	program
-		.command('*')
-		.action(() => {
-			const keys = _(program.options)
-				.filter(o => o.long)
-				.map(o => _.replace(o.long, /^[-]*/, ''))
-				.filter(key => !['help', 'version'].includes(key) && !_.isFunction(program[key]))
-				.value();
-
-			run(_.pick(program, keys));
+			process.exit(0);
 		});
 
 	program.parse(process.argv);
+
+	const keys = _(program.options)
+		.filter(o => o.long)
+		.map(o => _.replace(o.long, /^[-]*/, ''))
+		.filter(key => !['help', 'version'].includes(key) && !_.isFunction(program[key]))
+		.value();
+
+	run(_.pick(program, keys));
 
 };
 
