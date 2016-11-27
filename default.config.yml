@@ -7,9 +7,9 @@ letsencrypt:
   port: 9999
   prod: false
   challenge: 'http-01' # http-01, tls-sni-01, or dns-01
-routes:
-  - example.com:
-      backend: http://127.0.0.1:8080
-      ssl:
-        letsencrypt:
-          email: 'evoxy@example.com'
+#routes:
+#  - example.com:
+#      backend: http://127.0.0.1:8080
+#      ssl:
+#        letsencrypt:
+#          email: 'evoxy@example.com'
