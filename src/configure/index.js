@@ -3,9 +3,12 @@
 const _ = require('lodash');
 const path = require('path');
 const glob = require('glob');
+const chalk = require('chalk');
 const loaders = require('./loaders');
 
 const home = require('os-homedir')();
+
+const NS_CONF = chalk.blue.bold('evoxy:conf');
 
 class Configure {
 
@@ -25,6 +28,7 @@ class Configure {
 	}
 
 	load(file, options) {
+
 		if (!_.isString(file)) {
 			options = file;
 			file = undefined;
@@ -32,11 +36,11 @@ class Configure {
 		const possibles = this.possibles(file);
 		const f = this.find(possibles, options);
 		if (!f) {
-			console.log('[evoxy] No config file found from');
-			possibles.map(p => console.log('  ' + p));
+			console.log('%s - No config file found from', NS_CONF);
+			possibles.map(p => console.log('  - ' + chalk.green(p)));
 			return {};
 		}
-		console.log('[evoxy] Loading config from file:', f);
+		console.log('%s - Loading config from file ', NS_CONF, chalk.green(f));
 		const ccd = path.dirname(f);
 		return loaders.load(f, {home, ccd, base: ccd});
 	}
