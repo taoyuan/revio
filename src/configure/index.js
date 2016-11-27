@@ -31,6 +31,11 @@ class Configure {
 		}
 		const possibles = this.possibles(file);
 		const f = this.find(possibles, options);
+		if (!f) {
+			console.log('[evoxy] No config file found from');
+			possibles.map(p => console.log('  ' + p));
+			return {};
+		}
 		console.log('[evoxy] Loading config from file:', f);
 		const ccd = path.dirname(f);
 		return loaders.load(f, {home, ccd, base: ccd});

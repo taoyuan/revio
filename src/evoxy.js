@@ -5,6 +5,7 @@ const _ = require('lodash');
 const util = require('util');
 const Reverser = require('./reverser');
 const Configure = require('./configure');
+const Logger = require('./logger');
 const utils = require('./utils');
 
 module.exports = (file, options) => {
@@ -14,15 +15,19 @@ module.exports = (file, options) => {
 		file = null;
 	}
 
-	const config = file ? Configure('evoxy').load(file) : {};
+	const config = Configure('evoxy').load(file);
 
 	options = _.merge({
 		port: 8080
 	}, config, options);
 
-	console.log('-----------');
-	console.log(util.inspect(options, {colors: true, depth: null}));
-	console.log('-----------');
+	const logger = options.bunyan || options.logger || {};
+	logger.level = logger.level || (options.debug ? 'debug' : 'info');
+	const log = Logger.get(logger);
+
+	if (options.debug) {
+		log.debug(options, 'Using configuration');
+	}
 
 	const {routes} = options;
 	delete options['routes'];

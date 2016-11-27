@@ -2,7 +2,7 @@
 
 const _ = require('lodash');
 const program = require('commander');
-const proxy = require('./proxy');
+const evoxy = require('./evoxy');
 
 module.exports = function () {
 	program
@@ -24,5 +24,5 @@ module.exports = function () {
 
 function run(options) {
 	options = options || {};
-	return proxy(options.config, _.omit(options, 'config'));
+	return evoxy(options.config, _.omit(options, 'config'));
 }

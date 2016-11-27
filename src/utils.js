@@ -1,6 +1,8 @@
 "use strict";
 
 const _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
 const tls = require('tls');
 const validUrl = require('valid-url');
 const parseUrl = require('url').parse;
@@ -24,7 +26,8 @@ function redirectToHttps(req, res, target, ssl, log) {
 
 	const hostname = req.headers.host.split(':')[0] + ':' + (ssl.redirectPort || ssl.port);
 	const url = 'https://' + path.join(hostname, req.url);
-	log && log.info('Redirecting %s to %s', path.join(req.headers.host, req.url), url);
+	const from = path.join(req.headers.host, req.url);
+	log && log.info(`Redirecting ${from} to ${url}`);
 	//
 	// We can use 301 for permanent redirect, but its bad for debugging, we may have it as
 	// a configurable option.
@@ -72,8 +75,6 @@ exports.unbundleCert = unbundleCert;
 
 
 function getCertData(pathname, unbundle) {
-	const fs = require('fs');
-
 	// TODO: Support input as Buffer, Stream or Pathname.
 
 	if (pathname) {

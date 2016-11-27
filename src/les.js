@@ -12,8 +12,8 @@ const webrootPath = ':configDir/:hostname/.well-known/acme-challenge';
 
 class Les {
 
-	constructor(opts, logger) {
-		this.logger = logger || _.noop;
+	constructor(opts, log) {
+		this.log = log || _.noop;
 
 		this.opts = opts = Object.assign({
 			path: '',
@@ -21,6 +21,7 @@ class Les {
 			debug: false,
 		}, opts);
 
+		opts.certs = opts.certs || opts.path;
 		opts.prod = opts.prod || opts.production;
 		opts.challengeType = opts.challengeType || opts.challenge;
 
@@ -55,7 +56,7 @@ class Les {
 		const leSniChallenge = require('le-challenge-sni').create({debug: debug});
 		const server = prod ? LE.productionServerUrl : LE.stagingServerUrl;
 
-		this.logger.info({server, challengeType, debug}, 'Initiating Lets Encrypt');
+		this.log.info({server, challengeType, debug}, 'Initiating Lets Encrypt');
 
 		this.le = LE.create({
 			debug,
@@ -75,14 +76,14 @@ class Les {
 	_initServer() {
 		const {certs, port} = this.opts;
 
-		this.logger.info('Initializing lets encrypt local http server, path %s, port: %s', certs, port);
+		this.log.info('Initializing lets encrypt local http server, path %s, port: %s', certs, port);
 
 		// we need to proxy for example: 'example.com/.well-known/acme-challenge' -> 'localhost:port/example.com/'
 		this._httpServer = http.createServer((req, res) => {
 			const uri = url.parse(req.url).pathname;
 			const filename = path.join(certs, uri);
 
-			this.logger.info('LetsEncrypt CA trying to validate challenge %s', filename);
+			this.log.info('LetsEncrypt CA trying to validate challenge %s', filename);
 
 			fs.exists(filename, function (exists) {
 				if (!exists) {
@@ -114,7 +115,7 @@ class Les {
 				rsaKeySize: 2048,           // 2048 or higher
 				challengeType               // http-01, tls-sni-01, or dns-01
 			}).catch(err => {
-				this.logger.error(err, 'Registering LetsEncrypt certificates');
+				this.log.error(err, 'Registering LetsEncrypt certificates');
 			});
 		});
 	}

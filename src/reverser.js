@@ -6,7 +6,6 @@ const http = require('http');
 const httpProxy = require('http-proxy');
 const path = require('path');
 const _ = require('lodash');
-const bunyan = require('bunyan');
 const cluster = require('cluster');
 const hash = require('object-hash');
 const LRUCache = require("lru-cache");
@@ -14,14 +13,13 @@ const routeCache = LRUCache({max: 5000});
 const safe = require('safetimeout');
 const PromiseA = require('bluebird');
 
+const Logger = require('./logger');
 const Les = require('./les');
 const Resolvers = require('./resolvers');
 const utils = require('./utils');
 
 const ONE_DAY = 60 * 60 * 24 * 1000;
 const ONE_MONTH = ONE_DAY * 30;
-
-const LOG_LEVELS = ['info', 'debug', 'warn', 'error'];
 
 let respondNotFound = function (req, res) {
 	res.statusCode = 404;
@@ -31,57 +29,11 @@ let respondNotFound = function (req, res) {
 
 class Reverser {
 
-	static buildTarget(target, opts) {
-		opts = opts || {};
-		target = utils.prepareUrl(target);
-		target.sslRedirect = !opts.ssl || opts.ssl.redirect !== false;
-		target.useTargetHostHeader = opts.useTargetHostHeader === true;
-		return target;
-	};
-
-	static buildRoute(route) {
-		if (!_.isString(route) && !_.isObject(route)) {
-			return null;
-		}
-
-		if (_.isObject(route) && route.hasOwnProperty('urls') && route.hasOwnProperty('path')) {
-			// default route type matched.
-			return route;
-		}
-
-		const cacheKey = _.isString(route) ? route : hash(route);
-		const entry = routeCache.get(cacheKey);
-		if (entry) {
-			return entry;
-		}
-
-		const routeObject = {rr: 0, isResolved: true};
-		if (_.isString(route)) {
-			routeObject.urls = [Reverser.buildTarget(route)];
-			routeObject.path = '/';
-		} else {
-			if (!route.hasOwnProperty('url')) {
-				return null;
-			}
-
-			routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
-				return Reverser.buildTarget(url, route.opts || {});
-			});
-
-			routeObject.path = route.path || '/';
-		}
-		routeCache.set(cacheKey, routeObject);
-		return routeObject;
-	};
-
 	constructor(opts) {
 		this.opts = opts = opts || {};
 
-		if (opts.bunyan !== false) {
-			this.log = bunyan.createLogger(opts.bunyan || {name: 'evoxy'});
-		} else {
-			this.log = _.transform(LOG_LEVELS, (result, key) => result[key] = _.noop, {});
-		}
+		const logger = opts.bunyan || opts.logger;
+		this.log = logger !== false ? Logger.get(logger) : Logger.noop;
 
 		//
 		// Routing table.
@@ -215,7 +167,7 @@ class Reverser {
 		const route = this.resolve(src, url);
 
 		if (!route) {
-			this.log && this.log.warn({src: src, url: req.url}, 'no valid route found for given source');
+			this.log.warn({src: src, url: req.url}, 'no valid route found for given source');
 			return;
 		}
 
@@ -276,7 +228,7 @@ class Reverser {
 			const target = this._getTarget(src, req);
 			if (target) {
 				if (utils.shouldRedirectToHttps(this.certs, src, target)) {
-					utils.redirectToHttps(req, res, target, opts.ssl, log);
+					utils.redirectToHttps(req, res, target, opts.ssl, this.log);
 				} else {
 					proxy.web(req, res, {target: target});
 				}
@@ -414,7 +366,7 @@ class Reverser {
 							console.error('Missing certificate path for Lets Encrypt');
 							return;
 						}
-						this.log && this.log.info('Getting Lets Encrypt certificates for %s', src.hostname);
+						this.log.info('Getting Lets Encrypt certificates for %s', src.hostname);
 						this.updateCertificates(src.hostname, ssl.letsencrypt.email, ssl.letsencrypt.production);
 					} else {
 						// Trigger the use of the default certificates.
@@ -423,7 +375,7 @@ class Reverser {
 				}
 			}
 		}
-		target = Reverser.buildTarget(target, opts);
+		target = buildTarget(target, opts);
 
 		const hosts = routing[src.hostname] = routing[src.hostname] || [];
 		const pathname = src.pathname || '/';
@@ -519,7 +471,7 @@ class Reverser {
 		let route;
 		const resolved = _.find(this.resolvers, resolver => {
 			route = resolver.call(this, host, url);
-			route = route && Reverser.buildRoute(route);
+			route = route && buildRoute(route);
 			// ensure resolved route has path that prefixes URL
 			// no need to check for native routes.
 			if (route && (!route.isResolved || route.path === '/' || utils.startsWith(url, route.path))) {
@@ -547,5 +499,48 @@ class Reverser {
 
 }
 
+
+function buildTarget(target, opts) {
+	opts = opts || {};
+	target = utils.prepareUrl(target);
+	target.sslRedirect = !opts.ssl || opts.ssl.redirect !== false;
+	target.useTargetHostHeader = opts.useTargetHostHeader === true;
+	return target;
+}
+
+function buildRoute(route) {
+	if (!_.isString(route) && !_.isObject(route)) {
+		return null;
+	}
+
+	if (_.isObject(route) && route.hasOwnProperty('urls') && route.hasOwnProperty('path')) {
+		// default route type matched.
+		return route;
+	}
+
+	const cacheKey = _.isString(route) ? route : hash(route);
+	const entry = routeCache.get(cacheKey);
+	if (entry) {
+		return entry;
+	}
+
+	const routeObject = {rr: 0, isResolved: true};
+	if (_.isString(route)) {
+		routeObject.urls = [buildTarget(route)];
+		routeObject.path = '/';
+	} else {
+		if (!route.hasOwnProperty('url')) {
+			return null;
+		}
+
+		routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
+			return buildTarget(url, route.opts || {});
+		});
+
+		routeObject.path = route.path || '/';
+	}
+	routeCache.set(cacheKey, routeObject);
+	return routeObject;
+}
 
 module.exports = Reverser;
