@@ -63,16 +63,16 @@ $ npm i evoxy --save
 
 ```yaml
 server:
-	debug: false
-	port: 80
-	ssl:
-		port: 443
-		http2: true
-	letsencrypt:
-		path: '{{base}}/certs'
-		port: 9999
-		prod: false
-		challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
+  debug: false
+  port: 80
+  ssl:
+    port: 443
+    http2: true
+  letsencrypt:
+    path: '{{base}}/certs'
+    port: 9999
+    prod: false
+    challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
 routes:
   - example.com:
       backend: http://127.0.0.1:8080
@@ -127,7 +127,7 @@ server.register("balance.me", "http://172.17.43.6:8080");
 // LetsEncrypt support
 // With Redbird you can get zero conf and automatic SSL certificates for your domains
 server.register('example.com', 'http://172.60.80.2:8082', {
-	ssl: {
+  ssl: {
     letsencrypt: {
       email: 'john@example.com', // Domain owner/admin email
       production: true, // WARNING: Only use this flag when the server is verified to work correctly to avoid being banned!
@@ -188,7 +188,7 @@ Yaml example:
 
 ```yaml
 docker:
-	- example.com: company/myimage:latest
+  - example.com: company/myimage:latest
 ```
 
 ## Cluster support
@@ -200,7 +200,7 @@ any thread that may crash automatically, increasing even more its reliability.
 Programmatical example:
 ```js
 const server = new require('evoxy').server({
-	port: 8080,
+  port: 8080,
   cluster: 4
 });
 ```
@@ -208,8 +208,8 @@ const server = new require('evoxy').server({
 Yaml example:
 ```yaml
 server:
-	port: 8080
-	cluster: 4
+  port: 8080
+  cluster: 4
 ```
 
 ## NTLM support
