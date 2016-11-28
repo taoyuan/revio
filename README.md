@@ -5,6 +5,7 @@
 
 ## Highlights
 
+- Out of the box command-line tool: `evo` 
 - Challenges `http-01` and `tls-sni-01` have been tested, and `dns-01` should work.
 - Provided executable command `evo` with `/etc/evoxy/evoxy.yml` configuration support, just like `haproxy` or `nginx`, but more simple. 
 - Wildcard hostname support like `www.*.example.com`
