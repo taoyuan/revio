@@ -37,6 +37,7 @@ TLS protected services that just works.
 
 ```
 $ npm i evoxy -g
+$ sudo evoxy install
 ```
 
 ### Install locally
