@@ -1,6 +1,6 @@
 {
   "name": "evoxy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A reverse proxy server envolved from redbird",
   "license": "MIT",
   "repository": "taoyuan/evoxy",
