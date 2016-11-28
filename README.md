@@ -1,7 +1,12 @@
 # evoxy [![Build Status](https://travis-ci.org/taoyuan/evoxy.svg?branch=master)](https://travis-ci.org/taoyuan/evoxy)
 
-> A reverse proxy server. Evolved from [Redbird](https://github.com/OptimalBits/redbird). With built in Cluster, HTTP2, LetsEncrypt and Docker support 
+> A reverse proxy server. Evolved from [Redbird](https://github.com/OptimalBits/redbird). 
+> With built in Cluster, HTTP2, LetsEncrypt and Docker support 
 
+## Highlights
+
+- Challenges `http-01` and `tls-sni-01`(`redbird` has not supported this out of box) support have been tested, and `dns-01` maybe supported without tested.
+- Provided executable command `evo` with `/etc/evoxy/evoxy.yml` configuration support, just like `haproxy` or `nginx`, but more simple. 
 
 ## SUPER HOT
 Support for HTTP2. You can now enable HTTP2 just by setting the HTTP2 flag to true. Keep in mind that HTTP2 requires
@@ -37,68 +42,109 @@ $ npm i evoxy -g
 ### Install locally
 
 ```
+$ npm i evoxy
+```
+or
+```
 $ npm i evoxy --save
 ```
 
 ## Usage
 
-### Example programmatical
+### Run
 
-`evoxy` export `Reverser` as `ReverseProxy` in `redbird`
+```bash
+> sudo evo
+```
+
+### Config example
+
+`/etc/evoxy/evoxy.yml`:
+
+```yaml
+server:
+	debug: false
+	port: 80
+	ssl:
+		port: 443
+		http2: true
+	letsencrypt:
+		path: '{{base}}/certs'
+		port: 9999
+		prod: false
+		challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
+routes:
+  - example.com:
+      backend: http://127.0.0.1:8080
+      ssl:
+        letsencrypt:
+          email: 'evoxy@example.com'
+  - abc.example.com: http://172.17.42.4:8080
+  - abc.example.com/media: http://172.17.42.5:8080
+  - balance.me:
+      - http://172.17.40.6:8080
+      - http://172.17.41.6:8080
+      - http://172.17.42.6:8080
+      - http://172.17.43.6:8080
+```
+
+### Programmatical example
+
+`evoxy` export `Server` as `ReverseProxy` in `redbird`
 
 ```js
-const Reverser = require('evoxy').Reverser;
+const Server = require('evoxy').Server;
 
-const proxy = new Reverser({port: 80});
+const server = new Server({port: 80});
 
-// OPTIONAL: Setup your proxy but disable the X-Forwarded-For header
-const proxy = new Reverser({port: 80, xfwd: false});
+// OPTIONAL: Setup your server but disable the X-Forwarded-For header
+const server = new Server({port: 80, xfwd: false});
 
 // Route to any global ip
-proxy.register("optimalbits.com", "http://167.23.42.67:8000");
+server.register("optimalbits.com", "http://167.23.42.67:8000");
 
 // Route to any local ip, for example from docker containers.
-proxy.register("example.com", "http://172.17.42.1:8001");
+server.register("example.com", "http://172.17.42.1:8001");
 
 // Route from hostnames as well as paths
-proxy.register("example.com/static", "http://172.17.42.1:8002");
-proxy.register("example.com/media", "http://172.17.42.1:8003");
+server.register("example.com/static", "http://172.17.42.1:8002");
+server.register("example.com/media", "http://172.17.42.1:8003");
 
 // Subdomains, paths, everything just works as expected
-proxy.register("abc.example.com", "http://172.17.42.4:8080");
-proxy.register("abc.example.com/media", "http://172.17.42.5:8080");
+server.register("abc.example.com", "http://172.17.42.4:8080");
+server.register("abc.example.com/media", "http://172.17.42.5:8080");
 
 // Route to any href including a target path
-proxy.register("foobar.example.com", "http://172.17.42.6:8080/foobar");
+server.register("foobar.example.com", "http://172.17.42.6:8080/foobar");
 
 // You can also enable load balancing by registering the same hostname with different
 // target hosts. The requests will be evenly balanced using a Round-Robin scheme.
-proxy.register("balance.me", "http://172.17.40.6:8080");
-proxy.register("balance.me", "http://172.17.41.6:8080");
-proxy.register("balance.me", "http://172.17.42.6:8080");
-proxy.register("balance.me", "http://172.17.43.6:8080");
+server.register("balance.me", "http://172.17.40.6:8080");
+server.register("balance.me", "http://172.17.41.6:8080");
+server.register("balance.me", "http://172.17.42.6:8080");
+server.register("balance.me", "http://172.17.43.6:8080");
 
 // LetsEncrypt support
 // With Redbird you can get zero conf and automatic SSL certificates for your domains
-proxy.register('example.com', 'http://172.60.80.2:8082', {
+server.register('example.com', 'http://172.60.80.2:8082', {
 	ssl: {
     letsencrypt: {
       email: 'john@example.com', // Domain owner/admin email
-      production: true, // WARNING: Only use this flag when the proxy is verified to work correctly to avoid being banned!
+      production: true, // WARNING: Only use this flag when the server is verified to work correctly to avoid being banned!
     }
   }
 });
 
 //
 // LetsEncrypt requires a minimal web server for handling the challenges, this is by default on port 3000
-// it can be configured when initiating the proxy. This web server is only used by Redbird internally so most of the time
+// it can be configured when initiating the server. This web server is only used by Redbird internally so most of the time
 // you  do not need to do anything special other than avoid having other web services in the same host running
 // on the same port.
 
 //
 // HTTP2 Support using LetsEncrypt for the certificates
 //
-const proxy = new Reverser({
+require('evoxy').server({  // or using `server` creation function
   letsencrypt: {
     path: __dirname + '/certs',
     port:9999
@@ -110,26 +156,6 @@ const proxy = new Reverser({
 
 ```
 
-### Example with `/etc/evoxy/evoxy.yml`
-
-```yaml
-debug: false
-port: 80
-ssl:
-  port: 443
-  http2: true
-letsencrypt:
-  path: '{{base}}/certs'
-  port: 9999
-  prod: false
-  challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
-routes:
-  - example.com:
-      backend: http://127.0.0.1:8080
-      ssl:
-        letsencrypt:
-          email: 'evoxy@example.com'
-```
 ## About HTTPS
 
 The HTTPS proxy supports virtual hosts by using SNI (which most modern browsers support: IE7 and above).
@@ -144,11 +170,47 @@ these certificates needs to be handled with care so that they cannot be accessed
 
 ## Docker support
 
-[TBD](https://github.com/OptimalBits/redbird#docker-support)
+If you use docker, you can tell Redbird to automatically register routes based on image names. You register your image name and then every time a container starts from that image, 
+it gets registered, and unregistered if the container is stopped. If you run more than one container from the same image, Redbird will load balance following a round-robin algorithm:
+
+Programmatical example:
+```js
+const server = require('evoxy').server({
+  port: 8080,
+});
+
+require('evoxy')
+  .docker(server)
+  .register("example.com", 'company/myimage:latest');
+```
+
+Yaml example:
+
+```yaml
+docker:
+	- example.com: company/myimage:latest
+```
 
 ## Cluster support
 
-[TBD](https://github.com/OptimalBits/redbird#cluster-support)
+Evoxy support automatic support for node cluster. Just specify in the options object
+the number of processes that you want Redbird to use. Redbird will automatically re-start
+any thread that may crash automatically, increasing even more its reliability.
+
+Programmatical example:
+```js
+const server = new require('evoxy').server({
+	port: 8080,
+  cluster: 4
+});
+```
+
+Yaml example:
+```yaml
+server:
+	port: 8080
+	cluster: 4
+```
 
 ## NTLM support
 

@@ -1,6 +1,14 @@
 "use strict";
 
+const Configure = require('./configure');
+const Server = require('./server');
+const Docker = require('./docker');
+
 exports = module.exports = require('./evoxy');
 
-exports.Configure = require('./configure');
-exports.Reverser = require('./reverser');
+exports.Configure = Configure;
+exports.Server = Server;
+exports.Docker = Docker;
+
+exports.server = () => new Server(...arguments);
+exports.docker = () => new Docker(...arguments);

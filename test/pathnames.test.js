@@ -1,6 +1,6 @@
 "use strict";
 
-const Reverser = require('..').Reverser;
+const Server = require('..').Server;
 const Promise = require('bluebird');
 const http = require('http');
 const expect = require('chai').expect;
@@ -21,40 +21,40 @@ const opts = {
 describe("Target with pathnames", function () {
 
 	it("Should be proxyed to target with pathname and source pathname concatenated", function (done) {
-		const reverser = new Reverser(opts);
+		const server = new Server(opts);
 
-		expect(reverser.routing).to.be.an("object");
+		expect(server.routing).to.be.an("object");
 
-		reverser.register('127.0.0.1', '127.0.0.1:' + TEST_PORT + '/foo/bar/qux');
+		server.register('127.0.0.1', '127.0.0.1:' + TEST_PORT + '/foo/bar/qux');
 
-		expect(reverser.routing).to.have.property("127.0.0.1");
+		expect(server.routing).to.have.property("127.0.0.1");
 
 		testServer().then(function (req) {
 			expect(req.url).to.be.eql('/foo/bar/qux/a/b/c')
 		});
 
 		http.get('http://127.0.0.1:' + PROXY_PORT + '/a/b/c', function (res) {
-			reverser.close();
+			server.close();
 			done();
 		});
 
 	});
 
 	it("Should be proxyed to target with pathname and source pathname concatenated case 2", function (done) {
-		const reverser = new Reverser(opts);
+		const server = new Server(opts);
 
-		expect(reverser.routing).to.be.an("object");
+		expect(server.routing).to.be.an("object");
 
-		reverser.register('127.0.0.1/path', '127.0.0.1:' + TEST_PORT + '/foo/bar/qux');
+		server.register('127.0.0.1/path', '127.0.0.1:' + TEST_PORT + '/foo/bar/qux');
 
-		expect(reverser.routing).to.have.property("127.0.0.1");
+		expect(server.routing).to.have.property("127.0.0.1");
 
 		testServer().then(function (req) {
 			expect(req.url).to.be.eql('/foo/bar/qux/a/b/c')
 		});
 
 		http.get('http://127.0.0.1:' + PROXY_PORT + '/path/a/b/c', function (err, res) {
-			reverser.close();
+			server.close();
 			done();
 		});
 

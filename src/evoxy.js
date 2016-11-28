@@ -3,10 +3,11 @@
 const assert = require('assert');
 const _ = require('lodash');
 const util = require('util');
-const Reverser = require('./reverser');
+const Server = require('./server');
 const Configure = require('./configure');
 const Logger = require('./logger');
 const utils = require('./utils');
+const parsers = require('./parsers');
 
 module.exports = (file, options) => {
 
@@ -18,46 +19,28 @@ module.exports = (file, options) => {
 	const config = Configure('evoxy').load(file);
 
 	options = _.merge({
-		port: 8080
+		server: {
+			port: 8080
+		}
 	}, config, options);
 
-	const logger = options.bunyan || options.logger || {};
-	logger.level = logger.level || (options.debug ? 'debug' : 'info');
+	const serverOptions = options.server;
+
+	const logger = serverOptions.bunyan || serverOptions.logger || {};
+	logger.level = logger.level || (serverOptions.debug ? 'debug' : 'info');
 	const log = Logger.get(logger);
 
-	if (options.debug) {
-		log.debug(options, 'Using configuration');
+	if (serverOptions.debug) {
+		log.debug(serverOptions, 'Using configuration');
 	}
 
-	const {routes} = options;
-	delete options['routes'];
+	const server = new Server(serverOptions);
 
-	const reverser = new Reverser(options);
-
-	_.forEach(routes, route => {
-		if (_.isArray(route)) {
-			register(...route);
-		} else if (_.isObject(route)) {
-			_.forEach(route, (v, k) => {
-				if (_.isArray(v) || _.isString(v)) {
-					register(k, v);
-				} else if (_.isObject(v) && v.backend) {
-					register(k, v.backend || v.backends, _.omit(v, ['backend', 'backends']));
-				} else {
-					throw new Error(util.format('Invalid route {%s: %j}', k, v));
-				}
-			});
-		} else {
-			throw new Error(util.format('Invalid route %j', route));
-		}
+	_.forEach(options, (cfg, name) => {
+		if (name === 'server') return;
+		parsers.get(name)(server, cfg);
 	});
 
-	function register(source, targets, options) {
-		assert(source, 'source is required');
-		assert(targets, 'target is required');
-		_.forEach(utils.sureArray(targets), target => reverser.register(source, target, options));
-	}
-
-	return reverser;
+	return server;
 };
 

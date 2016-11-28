@@ -1,6 +1,6 @@
 "use strict";
 
-const Reverser = require('..').Reverser;
+const Server = require('..').Server;
 const expect = require('chai').expect;
 const _ = require('lodash');
 
@@ -20,12 +20,12 @@ describe("Custom Resolver", function () {
 
 	it("Should contain one resolver by default", function () {
 
-		let reverser = new Reverser(opts);
-		expect(reverser.resolvers).to.be.an('array');
-		expect(reverser.resolvers.length).to.be.eq(1);
-		expect(reverser.resolvers[0].name).to.be.eq('routing');
+		let server = new Server(opts);
+		expect(server.resolvers).to.be.an('array');
+		expect(server.resolvers.length).to.be.eq(1);
+		expect(server.resolvers[0].name).to.be.eq('routing');
 
-		reverser.close();
+		server.close();
 	});
 
 	it("Should register resolver with right priority", function () {
@@ -39,32 +39,32 @@ describe("Custom Resolver", function () {
 			resolvers: resolver
 		}, opts);
 
-		let reverser = new Reverser(options);
+		let server = new Server(options);
 
-		expect(reverser.resolvers.length).to.be.eq(2);
-		expect(reverser.resolvers[0]).to.be.eql(resolver);
+		expect(server.resolvers.length).to.be.eq(2);
+		expect(server.resolvers[0]).to.be.eql(resolver);
 
-		reverser.close();
+		server.close();
 
 
 		// test when an array is sent in as resolvers.
 		options.resolvers = [resolver];
-		reverser = new Reverser(options);
-		expect(reverser.resolvers.length).to.be.eq(2);
-		expect(reverser.resolvers[0]).to.be.eql(resolver);
-		reverser.close();
+		server = new Server(options);
+		expect(server.resolvers.length).to.be.eq(2);
+		expect(server.resolvers[0]).to.be.eql(resolver);
+		server.close();
 
 		resolver.priority = -1;
-		reverser = new Reverser(options);
-		expect(reverser.resolvers.length).to.be.eq(2);
-		expect(reverser.resolvers[1]).to.be.eql(resolver);
-		reverser.close();
+		server = new Server(options);
+		expect(server.resolvers.length).to.be.eq(2);
+		expect(server.resolvers[1]).to.be.eql(resolver);
+		server.close();
 
 
 		// test when invalid resolver is added
 		options.resolvers = {};
 		expect(function () {
-			new Reverser(options)
+			new Server(options)
 		}).to.throw(Error);
 
 
@@ -77,27 +77,27 @@ describe("Custom Resolver", function () {
 		};
 		resolver.priority = 1;
 
-		const reverser = new Reverser(opts);
-		reverser.addResolver(resolver);
-		expect(reverser.resolvers.length).to.be.eq(2);
-		expect(reverser.resolvers[0]).to.be.eq(resolver);
+		const server = new Server(opts);
+		server.addResolver(resolver);
+		expect(server.resolvers.length).to.be.eq(2);
+		expect(server.resolvers[0]).to.be.eq(resolver);
 
-		reverser.addResolver(resolver);
-		expect(reverser.resolvers.length, 'Only allows uniques.').to.be.eq(2);
+		server.addResolver(resolver);
+		expect(server.resolvers.length, 'Only allows uniques.').to.be.eq(2);
 
 
-		reverser.removeResolver(resolver);
-		expect(reverser.resolvers.length).to.be.eq(1);
-		expect(reverser.resolvers[0].name).to.be.eq('routing');
+		server.removeResolver(resolver);
+		expect(server.resolvers.length).to.be.eq(1);
+		expect(server.resolvers[0].name).to.be.eq('routing');
 
-		reverser.close();
+		server.close();
 
 	});
 
 
 	it('Should properly convert and cache route to routeObject', function () {
 
-		const builder = Reverser.buildRoute;
+		const builder = Server.buildRoute;
 
 		// invalid input
 		expect(builder(function () {
@@ -152,7 +152,7 @@ describe("Custom Resolver", function () {
 
 	it("Should resolve properly as expected", function () {
 
-		let proxy = new Reverser(opts), resolver = function (host, url) {
+		let proxy = new Server(opts), resolver = function (host, url) {
 			return url.match(/\/ignore/i) ? null : 'http://172.12.0.1/home'
 		}, result;
 

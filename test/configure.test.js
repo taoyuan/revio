@@ -37,13 +37,14 @@ describe('configure', () => {
 
 	describe('load', () => {
 		it('should load config with specified', () => {
-			let config = configure.load('test/fixtures/evoxy.yml');
-			assert.ok(config);
-			assert.equal(config.port, 9000);
+			let config;
+			config = configure.load('test/fixtures/evoxy.yml');
+			assert.ok(config.server);
+			assert.equal(config.server.port, 9000);
 
 			config = configure.load('test/fixtures/evoxy.json');
-			assert.ok(config);
-			assert.equal(config.port, 9001);
+			assert.ok(config.server);
+			assert.equal(config.server.port, 9001);
 		});
 	});
 

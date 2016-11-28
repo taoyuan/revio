@@ -1,15 +1,24 @@
-port: 9000
-ssl:
-  port: 9443
-  http2: true
-letsencrypt:
-  path: '{{base}}/certs'
-  port: 9999
-  prod: false
-  challenge: 'tls-sni-01' # http-01, tls-sni-01, or dns-01
+server:
+  debug: false
+  port: 9000
+  ssl:
+    port: 9443
+    http2: true
+  letsencrypt:
+    path: '{{base}}/certs'
+    port: 9999
+    prod: false
+    challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
 routes:
   - example.com:
       backend: http://127.0.0.1:8080
       ssl:
         letsencrypt:
           email: 'evoxy@example.com'
+  - abc.example.com: http://172.17.42.4:8080
+  - abc.example.com/media: http://172.17.42.5:8080
+  - balance.me:
+      - http://172.17.40.6:8080
+      - http://172.17.41.6:8080
+      - http://172.17.42.6:8080
+      - http://172.17.43.6:8080

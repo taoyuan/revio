@@ -27,7 +27,7 @@ let respondNotFound = function (req, res) {
 	res.end();
 };
 
-class Reverser {
+class Server {
 
 	static buildTarget(target, opts) {
 		opts = opts || {};
@@ -55,7 +55,7 @@ class Reverser {
 
 		const routeObject = {rr: 0, isResolved: true};
 		if (_.isString(route)) {
-			routeObject.urls = [Reverser.buildTarget(route)];
+			routeObject.urls = [Server.buildTarget(route)];
 			routeObject.path = '/';
 		} else {
 			if (!route.hasOwnProperty('url')) {
@@ -63,7 +63,7 @@ class Reverser {
 			}
 
 			routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
-				return Reverser.buildTarget(url, route.opts || {});
+				return Server.buildTarget(url, route.opts || {});
 			});
 
 			routeObject.path = route.path || '/';
@@ -94,18 +94,7 @@ class Reverser {
 		}
 
 		if (opts.cluster && cluster.isMaster) {
-			for (let i = 0; i < opts.cluster; i++) {
-				cluster.fork();
-			}
-
-			cluster.on('exit', function (worker, code, signal) {
-				// Fork if a worker dies.
-				log.error({code: code, signal: signal},
-					'worker died un-expectedly... restarting it.');
-				cluster.fork();
-			});
-
-			return;
+			return this._setupCluster(opts);
 		}
 
 		this.resolvers = [Resolvers.routing(this)];
@@ -160,9 +149,9 @@ class Reverser {
 		//
 		// Plain HTTP Proxy
 		//
-		const server = this.setupHttpProxy();
+		const httpServer = this.setupHttpProxy();
 
-		server.listen(opts.port);
+		httpServer.listen(opts.port);
 
 		proxy.on('error', (err, req, res) => {
 			//
@@ -191,7 +180,20 @@ class Reverser {
 		});
 
 		this.log.info('Started a Evoxy reverse proxy server on port %s', opts.port);
+	}
 
+	_setupCluster(opts) {
+		opts = opts || this.opts;
+
+		for (let i = 0; i < opts.cluster; i++) {
+			cluster.fork();
+		}
+
+		cluster.on('exit', (worker, code, signal) => {
+			// Fork if a worker dies.
+			this.log.error({code: code, signal: signal}, 'worker died unexpectedly... restarting it.');
+			cluster.fork();
+		});
 	}
 
 	_websocketsUpgrade(req, socket, head) {
@@ -266,7 +268,7 @@ class Reverser {
 
 	setupHttpProxy() {
 		const {proxy, opts, _websocketsUpgrade} = this;
-		const server = this.server = http.createServer((req, res) => {
+		const httpServer = this.httpServer = http.createServer((req, res) => {
 			const src = utils.getSource(req);
 			const target = this._getTarget(src, req);
 			if (target) {
@@ -284,13 +286,13 @@ class Reverser {
 		// Listen to the `upgrade` event and proxy the
 		// WebSocket requests as well.
 		//
-		server.on('upgrade', _websocketsUpgrade);
+		httpServer.on('upgrade', _websocketsUpgrade);
 
-		server.on('error', err => {
+		httpServer.on('error', err => {
 			this.log.error(err, 'Server Error');
 		});
 
-		return server;
+		return httpServer;
 	}
 
 	setupHttpsProxy() {
@@ -418,7 +420,7 @@ class Reverser {
 				}
 			}
 		}
-		target = Reverser.buildTarget(target, opts);
+		target = Server.buildTarget(target, opts);
 
 		const hosts = routing[src.hostname] = routing[src.hostname] || [];
 		const pathname = src.pathname || '/';
@@ -514,7 +516,7 @@ class Reverser {
 		let route;
 		const resolved = _.find(this.resolvers, resolver => {
 			route = resolver.call(this, host, url);
-			route = route && Reverser.buildRoute(route);
+			route = route && Server.buildRoute(route);
 			// ensure resolved route has path that prefixes URL
 			// no need to check for native routes.
 			if (route && (!route.isResolved || route.path === '/' || utils.startsWith(url, route.path))) {
@@ -526,7 +528,7 @@ class Reverser {
 
 	close() {
 		try {
-			this.server.close();
+			this.httpServer.close();
 			this.httpsServer && this.httpsServer.close();
 		} catch (err) {
 			// Ignore for now...
@@ -543,4 +545,4 @@ class Reverser {
 }
 
 
-module.exports = Reverser;
+module.exports = Server;
