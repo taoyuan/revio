@@ -400,7 +400,11 @@ class Server {
 			const ssl = opts.ssl;
 			if (ssl) {
 				if (!this.httpsServer) {
-					throw Error('Cannot register https routes without defining a ssl port');
+					throw new Error('Cannot register https routes without defining a ssl port');
+				}
+
+				if (!utils.isHostname(src.hostname)) {
+					throw new Error(`Hostname "${src.hostname}" is not valid for fetching ssl cert`);
 				}
 
 				if (!this.certs[src.hostname]) {

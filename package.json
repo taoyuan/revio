@@ -49,12 +49,14 @@
     "localhost.daplie.com-certificates": "^1.2.3",
     "lodash": "^4.17.2",
     "lru-cache": "^4.0.1",
+    "minimatch": "^3.0.3",
     "node-alias": "^1.0.4",
     "node-etcd": "^5.0.3",
     "object-hash": "^1.1.5",
     "os-homedir": "^1.0.2",
     "safetimeout": "^0.1.1",
     "spdy": "^3.4.4",
+    "url-parse": "^1.1.7",
     "valid-url": "^1.0.9"
   },
   "devDependencies": {

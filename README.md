@@ -7,6 +7,7 @@
 
 - Challenges `http-01` and `tls-sni-01`(`redbird` has not supported this out of box) support have been tested, and `dns-01` maybe supported without tested.
 - Provided executable command `evo` with `/etc/evoxy/evoxy.yml` configuration support, just like `haproxy` or `nginx`, but more simple. 
+- Wildcard hostname support like `www.*.example.com`
 
 ## SUPER HOT
 Support for HTTP2. You can now enable HTTP2 just by setting the HTTP2 flag to true. Keep in mind that HTTP2 requires
@@ -76,7 +77,7 @@ server:
     challenge: 'http-01'        # http-01, tls-sni-01, or dns-01
 routes:
   - example.com:
-      backend: http://127.0.0.1:8080
+      backend: http://172.17.42.1:8080
       ssl:
         letsencrypt:
           email: 'evoxy@example.com'
@@ -87,6 +88,7 @@ routes:
       - http://172.17.41.6:8080
       - http://172.17.42.6:8080
       - http://172.17.43.6:8080
+  - '*': http://172.17.42.10:8080
 ```
 
 ### Programmatical example

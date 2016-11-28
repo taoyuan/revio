@@ -5,7 +5,23 @@ const fs = require('fs');
 const path = require('path');
 const tls = require('tls');
 const validUrl = require('valid-url');
-const parseUrl = require('url').parse;
+const parseUrl = require('url-parse');
+
+const regIpAddress = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
+const regHostname = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
+
+function isIpAddress(ip) {
+	if (!_.isString(ip)) return false;
+	return regIpAddress.test(ip);
+}
+exports.isIpAddress = isIpAddress;
+
+function isHostname(hostname) {
+	if (!_.isString(hostname)) return false;
+	return regHostname.test(hostname);
+}
+exports.isHostname = isHostname;
+
 
 function sureArray(value) {
 	if (_.isNil(value)) return value;
@@ -98,13 +114,13 @@ exports.getCertData = getCertData;
 //
 // https://stackoverflow.com/questions/18052919/javascript-regular-expression-to-add-protocol-to-url-string/18053700#18053700
 // Adds http protocol if non specified.
-function setHttp(link) {
-	if (link.search(/^http[s]?\:\/\//) === -1) {
-		link = 'http://' + link;
+function sureProtocol(link, protocol = 'http') {
+	if (link.search(/^http[s]?:\/\//) === -1) {
+		link = protocol + '://' + link;
 	}
 	return link;
 }
-exports.setHttp = setHttp;
+exports.sureProtocol = sureProtocol;
 
 
 function startsWith(input, str) {
@@ -116,13 +132,23 @@ exports.startsWith = startsWith;
 function prepareUrl(url) {
 	url = _.clone(url);
 	if (_.isString(url)) {
-		url = setHttp(url);
+		url = sureProtocol(url);
 
 		if (!validUrl.isHttpUri(url) && !validUrl.isHttpsUri(url)) {
 			throw Error('uri is not a valid http uri ' + url);
 		}
 
 		url = parseUrl(url);
+
+		// make sure pathname and href has default value as url.parse
+		if (url.hostname) {
+			if (!url.pathname) {
+				url.pathname = '/';
+				if (url.href[url.href.length - 1] !== '/') {}
+				url.href += '/';
+			}
+		}
+
 	}
 	return url;
 }

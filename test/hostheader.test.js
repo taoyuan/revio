@@ -54,7 +54,6 @@ describe("Target with a hostname", function () {
 			server.close();
 			done();
 		});
-
 	});
 
 	it("Should return 404 after route is unregister", function (done) {
@@ -95,7 +94,8 @@ describe("Target with a hostname", function () {
 			server.close();
 			done();
 		});
-	})
+	});
+
 });
 
 function testServer() {

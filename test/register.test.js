@@ -26,14 +26,14 @@ describe("Route registration", function () {
 
 		const host = server.routing["example.com"];
 		expect(host).to.be.an("array");
-		expect(host[0]).to.have.property('path')
+		expect(host[0]).to.have.property('path');
 		expect(host[0].path).to.be.eql('/');
 		expect(host[0].urls).to.be.an('array');
 		expect(host[0].urls.length).to.be.eql(1);
 		expect(host[0].urls[0].href).to.be.eql('http://192.168.1.2:8080/');
 
 		server.unregister('example.com', '192.168.1.2:8080');
-		expect(server.resolve('example.com')).to.be.an("undefined")
+		expect(server.resolve('example.com')).to.be.an("undefined");
 		server.close();
 	});
 
@@ -169,12 +169,12 @@ describe("Route resolution", function () {
 		server.register('example.com/foo/baz', '192.168.1.3:8080');
 
 		const route = server.resolve('example.com', '/foo/asd/1/2');
-		expect(route.path).to.be.eql('/foo')
+		expect(route.path).to.be.eql('/foo');
 		expect(route.urls.length).to.be.eql(1);
 		expect(route.urls[0].href).to.be.eql('http://192.168.1.3:8080/');
 
 		server.close();
-	})
+	});
 
 	it("should resolve to a correct route with complex path", function () {
 		const server = new Server(opts);
@@ -189,12 +189,12 @@ describe("Route resolution", function () {
 
 		const route = server.resolve('example.com', '/foo/baz/a/b/c');
 
-		expect(route.path).to.be.eql('/foo/baz')
+		expect(route.path).to.be.eql('/foo/baz');
 		expect(route.urls.length).to.be.eql(1);
 		expect(route.urls[0].href).to.be.eql('http://192.168.1.7:8080/');
 
 		server.close();
-	})
+	});
 
 	it("should resolve to undefined if route not available", function () {
 		const server = new Server(opts);
@@ -208,10 +208,10 @@ describe("Route resolution", function () {
 		server.register('foobar.com/foo/baz', '192.168.1.3:8080');
 
 		let route = server.resolve('wrong.com');
-		expect(route).to.be.an('undefined')
+		expect(route).to.be.an('undefined');
 
 		route = server.resolve('foobar.com');
-		expect(route).to.be.an('undefined')
+		expect(route).to.be.an('undefined');
 
 		server.close();
 	});
@@ -260,13 +260,54 @@ describe("Route resolution", function () {
 		const route = server.resolve('example.com', '/qux/a/b/c');
 		expect(route.path).to.be.eql('/');
 
-		const req = {url: '/foo/baz/a/b/c'}
+		const req = {url: '/foo/baz/a/b/c'};
 		const target = server._getTarget('example.com', req);
-		expect(target.href).to.be.eql('http://192.168.1.3:8080/a/b')
-		expect(req.url).to.be.eql('/a/b/baz/a/b/c')
+		expect(target.href).to.be.eql('http://192.168.1.3:8080/a/b');
+		expect(req.url).to.be.eql('/a/b/baz/a/b/c');
 
 		server.close();
 	})
+});
+
+describe("Wildcard hostname", function () {
+	it("should resolve to a correct route", function () {
+		const server = new Server(opts);
+
+		expect(server.routing).to.be.an("object");
+
+		server.register('*.example.com/x', '192.168.1.2:8080');
+		server.register('*.example.com/qux/baz', '192.168.1.5:8080');
+		server.register('*.example.com/foo', '192.168.1.3:8080');
+		server.register('*.foobar.com/bar', '192.168.1.4:8080');
+		server.register('*.foobar.com/foo/baz', '192.168.1.3:8080');
+
+		const route = server.resolve('www.foo.example.com', '/x/y/1/2');
+		expect(route.path).to.be.eql('/x');
+		expect(route.urls.length).to.be.eql(1);
+		expect(route.urls[0].href).to.be.eql('http://192.168.1.2:8080/');
+
+		server.close();
+	});
+
+	it("should resolve to undefined if route not available", function () {
+		const server = new Server(opts);
+
+		expect(server.routing).to.be.an("object");
+
+		server.register('*.example.com', '192.168.1.2:8080');
+		server.register('*.example.com/qux/baz', '192.168.1.5:8080');
+		server.register('*.example.com/foo', '192.168.1.3:8080');
+		server.register('*.foobar.com/bar', '192.168.1.4:8080');
+		server.register('*.foobar.com/foo/baz', '192.168.1.3:8080');
+
+		let route = server.resolve('wrong.com');
+		expect(route).to.be.an('undefined');
+
+		route = server.resolve('foobar.com');
+		expect(route).to.be.an('undefined');
+
+		server.close();
+	});
 });
 
 describe("TLS/SSL", function () {
