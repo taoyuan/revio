@@ -1,3 +1,9 @@
 language: node_js
 node_js:
   - '6'
+before_script:
+  - npm prune
+script:
+  - npm test
+after_success:
+  - npm run coverage
