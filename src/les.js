@@ -76,7 +76,7 @@ class Les {
 	_initServer() {
 		const {certs, port} = this.opts;
 
-		this.log.info('Initializing lets encrypt local http server, path %s, port: %s', certs, port);
+		this.log.info('Initializing letsencrypt local http server, path %s, port: %s', certs, port);
 
 		// we need to proxy for example: 'example.com/.well-known/acme-challenge' -> 'localhost:port/example.com/'
 		this._httpServer = http.createServer((req, res) => {
@@ -101,13 +101,16 @@ class Les {
 	fetch(domain, email, opts) {
 		opts = Object.assign({}, this.opts, opts);
 		const domains = utils.sureArray(domain);
-		const {challengeType} = opts;
+		const {challengeType, renew} = opts;
 
 		// Check in-memory cache of certificates for the named domain
 		return this.le.check({domains: domains}).then(results => {
-			if (results) return results;
+			if (results && !renew) {
+				return results;
+			}
 
 			// Register Certificate manually
+			this.log.info('Manually registering certificate for %s', domain);
 			return this.le.register({
 				domains: [domain],
 				email,

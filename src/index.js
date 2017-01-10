@@ -4,7 +4,7 @@ const Configure = require('./configure');
 const Server = require('./server');
 const Docker = require('./docker');
 
-exports = module.exports = require('./evoxy');
+exports = module.exports = require('./revio');
 
 exports.Configure = Configure;
 exports.Server = Server;

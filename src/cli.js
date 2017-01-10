@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const PromiseA = require('bluebird');
 const program = require('commander');
-const evoxy = require('./evoxy');
+const revio = require('./revio');
 
 module.exports = function (argv) {
 
@@ -44,6 +44,6 @@ function run(program) {
 			.value();
 		const options = _.pick(program, keys);
 
-		return evoxy(options.config, _.omit(options, 'config'));
+		return revio(options.config, _.omit(options, 'config'));
 	}
 }

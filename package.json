@@ -1,17 +1,16 @@
 {
-  "name": "evoxy",
+  "name": "revio",
   "version": "0.2.2",
-  "description": "A reverse proxy server envolved from redbird",
+  "description": "A reverse proxy server",
   "license": "MIT",
-  "repository": "taoyuan/evoxy",
+  "repository": "taoyuan/revio",
   "author": {
     "name": "Yuan Tao",
     "email": "towyuan@outlook.com",
     "url": "github.com/taoyuan"
   },
   "bin": {
-    "evoxy": "./bin/evoxy.js",
-    "evo": "./bin/evo.js"
+    "revio": "./bin/revio.js"
   },
   "engines": {
     "node": ">=6"
@@ -19,7 +18,7 @@
   "main": "./src/index",
   "scripts": {
     "lint": "eslint .",
-    "test": "./node_modules/.bin/mocha test/**/*.test.js",
+    "test": "nyc mocha test/**/*.test.js",
     "posttest": "npm run lint && nsp check",
     "postinstall": "node scripts/npm-post-install"
   },
@@ -64,6 +63,13 @@
     "chai-as-promised": "^6.0.0",
     "eslint": "^3.11.0",
     "mocha": "^3.2.0",
-    "nsp": "^2.6.2"
+    "nsp": "^2.6.2",
+    "nyc": "^10.0.0"
+  },
+  "nyc": {
+    "reporter": [
+      "lcov",
+      "text"
+    ]
   }
 }

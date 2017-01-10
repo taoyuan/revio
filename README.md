@@ -1,11 +1,11 @@
-# evoxy [![Build Status](https://travis-ci.org/taoyuan/evoxy.svg?branch=master)](https://travis-ci.org/taoyuan/evoxy)
+# revio [![Build Status](https://travis-ci.org/taoyuan/revio.svg?branch=master)](https://travis-ci.org/taoyuan/revio)
 
 > A reverse proxy server. Evolved from [Redbird](https://github.com/OptimalBits/redbird). 
 > With built in Cluster, HTTP2, LetsEncrypt and Docker support 
 
 ## Highlights
 
-- Out of the box command-line tool `evo` with yaml configuratio support (default: `/etc/evoxy/evoxy.yml`)
+- Out of the box command-line tool `revio` with yaml configuratio support (default: `/etc/revio/revio.yml`)
 - Challenges `http-01` and `tls-sni-01` have been tested, and `dns-01` should work
 - Wildcard hostname support like `www.*.example.com`
 
@@ -37,18 +37,18 @@ TLS protected services that just works.
 ### Install globally
 
 ```
-$ npm i evoxy -g
-$ sudo evoxy install
+$ npm i revio -g
+$ sudo revio install
 ```
 
 ### Install locally
 
 ```
-$ npm i evoxy
+$ npm i revio
 ```
 or
 ```
-$ npm i evoxy --save
+$ npm i revio --save
 ```
 
 ## Usage
@@ -56,12 +56,12 @@ $ npm i evoxy --save
 ### Run
 
 ```bash
-> sudo evo
+> sudo revio
 ```
 
 ### Config example
 
-`/etc/evoxy/evoxy.yml`:
+`/etc/revio/revio.yml`:
 
 ```yaml
 server:
@@ -80,7 +80,7 @@ routes:
       backend: http://172.17.42.1:8080
       ssl:
         letsencrypt:
-          email: 'evoxy@example.com'
+          email: 'revio@example.com'
   - abc.example.com: http://172.17.42.4:8080
   - abc.example.com/media: http://172.17.42.5:8080
   - balance.me:
@@ -93,10 +93,10 @@ routes:
 
 ### Programmatical example
 
-`evoxy` export `Server` as `ReverseProxy` in `redbird`
+`revio` export `Server` as `ReverseProxy` in `redbird`
 
 ```js
-const Server = require('evoxy').Server;
+const Server = require('revio').Server;
 
 const server = new Server({port: 80});
 
@@ -147,7 +147,7 @@ server.register('example.com', 'http://172.60.80.2:8082', {
 //
 // HTTP2 Support using LetsEncrypt for the certificates
 //
-require('evoxy').server({  // or using `server` creation function
+require('revio').server({  // or using `server` creation function
   letsencrypt: {
     path: __dirname + '/certs',
     port:9999
@@ -178,11 +178,11 @@ it gets registered, and unregistered if the container is stopped. If you run mor
 
 Programmatical example:
 ```js
-const server = require('evoxy').server({
+const server = require('revio').server({
   port: 8080,
 });
 
-require('evoxy')
+require('revio')
   .docker(server)
   .register("example.com", 'company/myimage:latest');
 ```
@@ -202,7 +202,7 @@ any thread that may crash automatically, increasing even more its reliability.
 
 Programmatical example:
 ```js
-const server = new require('evoxy').server({
+const server = new require('revio').server({
   port: 8080,
   cluster: 4
 });

@@ -20,8 +20,8 @@ function parserModuleNames(name) {
 	const names = []; // Check the name as is
 	if (!name.match(/^\//)) {
 		names.push('./parsers/' + name); // Check built-in parsers
-		if (name.indexOf('evoxy-parser-') !== 0) {
-			names.push('evoxy-parser-' + name); // Try evoxy-parser-<name>
+		if (name.indexOf('revio-parser-') !== 0) {
+			names.push('revio-parser-' + name); // Try revio-parser-<name>
 		}
 	}
 	return names;

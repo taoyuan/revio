@@ -6,7 +6,7 @@ const bunyan = require('bunyan');
 const LOG_LEVELS = ['trace', 'debug', 'info', 'error', 'fatal'];
 
 exports.create = function (options) {
-	options = Object.assign({name: 'evoxy'}, options);
+	options = Object.assign({name: 'revio'}, options);
 	return bunyan.createLogger(options);
 };
 

@@ -540,7 +540,7 @@ class Server {
 	};
 
 	notFound(callback) {
-		if (typeof callback == "function") {
+		if (_.isFunction(callback)) {
 			return respondNotFound = callback;
 		}
 		throw new Error('notFound callback is not a function');

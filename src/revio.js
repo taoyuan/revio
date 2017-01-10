@@ -16,7 +16,7 @@ module.exports = (file, options) => {
 		file = null;
 	}
 
-	const config = Configure('evoxy').load(file);
+	const config = Configure('revio').load(file);
 
 	options = _.merge({
 		server: {

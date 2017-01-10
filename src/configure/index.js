@@ -8,7 +8,7 @@ const loaders = require('./loaders');
 
 const home = require('os-homedir')();
 
-const NS_CONF = chalk.blue.bold('evoxy:conf');
+const NS_CONF = chalk.blue.bold('revio:conf');
 
 class Configure {
 

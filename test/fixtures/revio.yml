@@ -14,7 +14,7 @@ routes:
       backend: http://127.0.0.1:8080
       ssl:
         letsencrypt:
-          email: 'evoxy@example.com'
+          email: 'revio@example.com'
   - abc.example.com: http://172.17.42.4:8080
   - abc.example.com/media: http://172.17.42.5:8080
   - balance.me:
