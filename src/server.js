@@ -14,7 +14,7 @@ const safe = require('safetimeout');
 const PromiseA = require('bluebird');
 
 const Logger = require('./logger');
-const Les = require('./les');
+const Certifier = require('./certifier');
 const Resolvers = require('./resolvers');
 const utils = require('./utils');
 const arrify = require("arrify");
@@ -260,7 +260,7 @@ class Server {
 			throw Error('Missing certificate path for Lets Encrypt');
 		}
 		opts.port = opts.port || 9999;
-		this.les = new Les(opts, this.log);
+		this.certifier = new Certifier(opts, this.log);
 		this.letsencryptHost = '127.0.0.1:' + opts.port;
 		const url = 'http://' + this.letsencryptHost;
 		const challengeResolver = Resolvers.challenge(url, 9999);
@@ -296,7 +296,7 @@ class Server {
 	setupHttpsProxy(opts) {
 		const {proxy, _websocketsUpgrade} = this;
 		const certs = this.certs = {};
-		const sni = this.les && this.les.le.sni;
+		const sni = this.certifier && this.certifier.le.sni;
 
 		let options = {
 			SNICallback: function (hostname, cb) {
@@ -413,6 +413,7 @@ class Server {
 							console.error('Missing certificate path for Lets Encrypt');
 							return;
 						}
+						this.certifier.approveDomain(src.hostname);
 						this.log.info('Getting Lets Encrypt certificates for %s', src.hostname);
 						this.updateCertificates(src.hostname, ssl.letsencrypt.email, ssl.letsencrypt.production);
 					} else {
@@ -454,7 +455,7 @@ class Server {
 			this.updateCertificates(domain, email, true);
 		};
 
-		return this.les.fetch(domain, email, fetchOpts).then(certs => {
+		return this.certifier.fetch(domain, email, fetchOpts).then(certs => {
 			if (certs) {
 				this.certs[domain] = tls.createSecureContext({
 					key: certs.privkey,

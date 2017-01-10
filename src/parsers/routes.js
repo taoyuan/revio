@@ -3,7 +3,7 @@
 const assert = require('assert');
 const _ = require('lodash');
 const util = require('util');
-const utils = require('../utils');
+const arrify = require('arrify');
 
 module.exports = function (server, config) {
 
@@ -28,7 +28,7 @@ module.exports = function (server, config) {
 	function register(source, targets, options) {
 		assert(source, 'source is required');
 		assert(targets, 'target is required');
-		_.forEach(utils.sureArray(targets), target => server.register(source, target, options));
+		arrify(targets).forEach(target => server.register(source, target, options));
 	}
 
 };

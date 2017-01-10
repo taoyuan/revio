@@ -11,7 +11,7 @@ const arrify = require("arrify");
 
 const webrootPath = ':configDir/:hostname/.well-known/acme-challenge';
 
-class Les {
+class Certifier {
 
 	constructor(opts, log) {
 		this.log = log || _.noop;
@@ -20,20 +20,25 @@ class Les {
 			path: '',
 			port: 9999,
 			debug: false,
+			email: 'revio@email.com',
+			agreeTos: true
 		}, opts);
 
 		opts.certs = opts.certs || opts.path;
 		opts.prod = opts.prod || opts.production;
 		opts.challengeType = opts.challengeType || opts.challenge;
 
+		// domain placeholder for letsencrypt approveDomains to avoid throw "not properly configured" exception
+		this.approvedDomains = ['-'];
+
 		this._initLetsEncrypt();
 		this._initServer();
 	}
 
 	_initLetsEncrypt() {
-		const {log} = this;
+		const {log, approvedDomains} = this;
 		// Storage Backend
-		const {certs: configDir, debug, prod, challengeType} = this.opts;
+		const {certs: configDir, debug, prod, challengeType, email, agreeTos} = this.opts;
 
 		const store = require('le-store-certbot').create({
 			privkeyPath: ':configDir/:hostname/privkey.pem',
@@ -58,6 +63,9 @@ class Les {
 		this.log.info({server, challengeType, debug}, 'Initiating Lets Encrypt');
 
 		this.le = LE.create({
+			email,															// for approveDomains
+			agreeTos,														// for approveDomains
+			approveDomains: approvedDomains,		// for approveDomains
 			debug,
 			server,
 			store,                     					// handles saving of config, accounts, and certificates
@@ -95,6 +103,12 @@ class Les {
 				fs.createReadStream(filename, "binary").pipe(res);
 			});
 		}).listen(port);
+	}
+
+	approveDomain(domain) {
+		if (_.isString(domain) && !this.approvedDomains.includes(domain)) {
+			this.approvedDomains.push(domain);
+		}
 	}
 
 	/**
@@ -142,4 +156,4 @@ class Les {
 	}
 }
 
-module.exports = Les;
+module.exports = Certifier;
