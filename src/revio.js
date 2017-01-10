@@ -10,7 +10,6 @@ const utils = require('./utils');
 const parsers = require('./parsers');
 
 module.exports = (file, options) => {
-
 	if (typeof file === 'object') {
 		options = file;
 		file = null;
