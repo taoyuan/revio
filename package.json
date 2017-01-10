@@ -60,7 +60,7 @@
     "valid-url": "^1.0.9"
   },
   "optionalDependencies": {
-    "deasync": "0.1.9"
+    "deasync": "^0.1.9"
   },
   "devDependencies": {
     "chai": "^3.5.0",
