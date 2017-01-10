@@ -31,6 +31,7 @@ class Les {
 	}
 
 	_initLetsEncrypt() {
+		const {log} = this;
 		// Storage Backend
 		const {certs: configDir, debug, prod, challengeType} = this.opts;
 
@@ -66,7 +67,7 @@ class Les {
 				'tls-sni-01': leSniChallenge,
 			},
 			log: function () {
-				this.log.info('Lets encrypt debugger', arguments)
+				log.info('Lets encrypt debugger', arguments)
 			}
 		});
 	}
