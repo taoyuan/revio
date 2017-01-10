@@ -1,6 +1,11 @@
-# revio [![Build Status](https://travis-ci.org/taoyuan/revio.svg?branch=master)](https://travis-ci.org/taoyuan/revio)
+# revio 
+[![NPM version](http://img.shields.io/npm/v/revio.svg?style=flat-square)](https://www.npmjs.com/package/revio)
+[![NPM downloads](http://img.shields.io/npm/dm/revio.svg?style=flat-square)](https://www.npmjs.com/package/revio)
+[![Build Status](http://img.shields.io/travis/taoyuan/revio/master.svg?style=flat-square)](https://travis-ci.org/taoyuan/revio)
+[![Coverage Status](https://img.shields.io/coveralls/taoyuan/revio.svg?style=flat-square)](https://coveralls.io/taoyuan/revio)
 
-> A reverse proxy server. Evolved from [Redbird](https://github.com/OptimalBits/redbird). 
+
+> A Reverse Proxy Server.  
 > With built in Cluster, HTTP2, LetsEncrypt and Docker support 
 
 ## Highlights
