@@ -445,15 +445,16 @@ class Server {
 		return this;
 	};
 
-	updateCertificates(domain, email) {
+	updateCertificates(domain, email, renew) {
 		const {opts} = this;
+		const fetchOpts = Object.assign({}, opts.letsencrypt, {renew});
 
 		const renewCertificate = () => {
 			this.log.info('Renewing letsencrypt certificates for %s', domain);
-			this.updateCertificates(domain, email);
+			this.updateCertificates(domain, email, true);
 		};
 
-		return this.les.fetch(domain, email, opts.letsencrypt).then(certs => {
+		return this.les.fetch(domain, email, fetchOpts).then(certs => {
 			if (certs) {
 				this.certs[domain] = tls.createSecureContext({
 					key: certs.privkey,
@@ -472,7 +473,7 @@ class Server {
 				this.certs[domain].renewalTimeout = safe.setTimeout(renewCertificate, renewTime);
 			} else {
 				//
-				// TODO: Try again, but we need an exponential backof to avoid getting banned.
+				// TODO: Try again, but we need an exponential back off to avoid getting banned.
 				//
 			}
 		}, err => console.error('Getting LetsEncrypt certificates', err));

@@ -54,7 +54,7 @@ class Les {
 			debug: debug
 		});
 
-		const leSniChallenge = require('le-challenge-sni').create({debug: debug});
+		const leSniChallenge = require('le-challenge-sni').create({debug});
 		const server = prod ? LE.productionServerUrl : LE.stagingServerUrl;
 
 		this.log.info({server, challengeType, debug}, 'Initiating Lets Encrypt');
@@ -113,7 +113,7 @@ class Les {
 		const {challengeType, renew} = opts;
 
 		// Check in-memory cache of certificates for the named domain
-		return this.le.check({domains: domains}).then(cert => {
+		return this.le.check({domains}).then(cert => {
 			const options = {
 				domains: [domain],
 				email,
