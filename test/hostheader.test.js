@@ -34,7 +34,6 @@ describe("Target with a hostname", function () {
 			server.close();
 			done();
 		});
-
 	});
 
 	it("Should not have the host header passed to the target", function (done) {
