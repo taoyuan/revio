@@ -3,7 +3,7 @@
 
 /**
  *
- * Evoxy Docker Module from Redbird.
+ * Revio Docker Module from Redbird.
 
  * This module handles automatic registration and de-registration of
  * services running on docker containers.

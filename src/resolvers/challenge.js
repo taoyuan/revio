@@ -1,10 +1,12 @@
 "use strict";
 
-module.exports = function (port, priority) {
+const _ = require('lodash');
+
+module.exports = function (letsencryptHost, priority) {
 	priority = priority || 0;
 	function challenge(host, url) {
 		if (/^\/.well-known\/acme-challenge/.test(url)) {
-			return 'http://127.0.0.1:' + port + '/' + host;
+			return letsencryptHost + '/' + host;
 		}
 	}
 	challenge.priority = priority;

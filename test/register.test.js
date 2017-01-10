@@ -20,7 +20,7 @@ describe("Route registration", function () {
 
 		server.register('example.com', '192.168.1.2:8080');
 
-		expect(server.routing).to.have.property("example.com")
+		expect(server.routing).to.have.property("example.com");
 
 		expect(server.resolve('example.com')).to.be.an("object");
 
@@ -92,19 +92,19 @@ describe("Route registration", function () {
 		expect(host[0].urls[0].href).to.be.eql('http://192.168.1.6:8084/');
 
 		server.unregister('example1.com');
-		expect(server.resolve('example1.com')).to.be.an("undefined")
+		expect(server.resolve('example1.com')).to.be.an("undefined");
 
 		server.unregister('example2.com');
-		expect(server.resolve('example2.com')).to.be.an("undefined")
+		expect(server.resolve('example2.com')).to.be.an("undefined");
 
 		server.unregister('example3.com');
-		expect(server.resolve('example3.com')).to.be.an("undefined")
+		expect(server.resolve('example3.com')).to.be.an("undefined");
 
 		server.unregister('example4.com');
-		expect(server.resolve('example4.com')).to.be.an("undefined")
+		expect(server.resolve('example4.com')).to.be.an("undefined");
 
 		server.unregister('example5.com');
-		expect(server.resolve('example5.com')).to.be.an("undefined")
+		expect(server.resolve('example5.com')).to.be.an("undefined");
 
 
 		server.close();
@@ -120,27 +120,27 @@ describe("Route registration", function () {
 		server.register('example.com/foo', '192.168.1.3:8080');
 		server.register('example.com/bar', '192.168.1.4:8080');
 
-		expect(server.routing).to.have.property("example.com")
+		expect(server.routing).to.have.property("example.com");
 
 		const host = server.routing["example.com"];
 		expect(host).to.be.an("array");
-		expect(host[0]).to.have.property('path')
+		expect(host[0]).to.have.property('path');
 		expect(host[0].path).to.be.eql('/qux/baz');
 		expect(host[0].urls).to.be.an('array');
 		expect(host[0].urls.length).to.be.eql(1);
 		expect(host[0].urls[0].href).to.be.eql('http://192.168.1.5:8080/');
 
-		expect(host[0].path.length).to.be.least(host[1].path.length)
-		expect(host[1].path.length).to.be.least(host[2].path.length)
-		expect(host[2].path.length).to.be.least(host[3].path.length)
+		expect(host[0].path.length).to.be.least(host[1].path.length);
+		expect(host[1].path.length).to.be.least(host[2].path.length);
+		expect(host[2].path.length).to.be.least(host[3].path.length);
 
 		server.unregister('example.com');
-		expect(server.resolve('example.com')).to.be.an("undefined")
+		expect(server.resolve('example.com')).to.be.an("undefined");
 
-		expect(server.resolve('example.com', '/foo')).to.be.an("object")
+		expect(server.resolve('example.com', '/foo')).to.be.an("object");
 
 		server.unregister('example.com/foo');
-		expect(server.resolve('example.com', '/foo')).to.be.an("undefined")
+		expect(server.resolve('example.com', '/foo')).to.be.an("undefined");
 
 		server.close();
 	});
@@ -340,8 +340,79 @@ describe("TLS/SSL", function () {
 		server.unregister('example.com', '192.168.1.2:8080');
 		expect(server.resolve('example.com')).to.be.an("undefined");
 		expect(server.certs['example.com']).to.be.an("undefined");
+	});
 
-	})
+	it('Should bind https servers to different ip addresses', function (testDone) {
+		const isPortTaken = function (port, ip, done) {
+			const net = require('net');
+			const tester = net.createServer()
+				.once('error', err => {
+					if (err.code !== 'EADDRINUSE') return done(err);
+					done(null, true)
+				})
+				.once('listening', () => {
+					tester.once('close', () => {
+						done(null, false)
+					}).close()
+				})
+				.listen(port, ip)
+		};
+
+		const server = new Server({
+			bunyan: false,
+			port: 28080,
+
+			// Specify filenames to default SSL certificates (in case SNI is not supported by the
+			// user's browser)
+			ssl: [
+				{
+					port: 4433,
+					key: 'dummy',
+					cert: 'dummy',
+					ip: '127.0.0.1'
+				},
+				{
+					port: 4434,
+					key: 'dummy',
+					cert: 'dummy',
+					ip: '127.0.0.1'
+				}
+			]
+		});
+
+		server.register('mydomain.com', 'http://127.0.0.1:8001', {
+			ssl: {
+				key: 'dummy',
+				cert: 'dummy',
+				ca: 'dummym'
+			}
+		});
+
+		let portsTaken = 0;
+		let portsChecked = 0;
+
+		function portsTakenDone(err, taken) {
+			portsChecked++;
+			if (err) {
+				throw err;
+			}
+			if (taken) {
+				portsTaken++;
+			}
+			if (portsChecked === 2) {
+				portsCheckDone();
+			}
+		}
+
+		function portsCheckDone() {
+			expect(portsTaken).to.be.eql(2);
+			server.close();
+			testDone();
+		}
+
+		isPortTaken(4433, '127.0.0.1', portsTakenDone);
+		isPortTaken(4434, '127.0.0.1', portsTakenDone);
+	});
 });
 
 

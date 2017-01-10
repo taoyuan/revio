@@ -7,6 +7,7 @@ const url = require('url');
 const fs = require('fs');
 const LE = require('letsencrypt');
 const utils = require('./utils');
+const arrify = require("arrify");
 
 const webrootPath = ':configDir/:hostname/.well-known/acme-challenge';
 
@@ -98,28 +99,47 @@ class Les {
 		}).listen(port);
 	}
 
+	/**
+	 *  Fetch the certificates for the given domain.
+	 *  Handles all the LetsEncrypt protocol. Uses
+	 *  existing certificates if any, or negotiates a new one.
+	 *  Returns a promise that resolves to an object with the certificates.
+	 *  TODO: We should use something like https://github.com/PaquitoSoft/memored/blob/master/index.js
+	 *  to avoid
+	 */
 	fetch(domain, email, opts) {
 		opts = Object.assign({}, this.opts, opts);
-		const domains = utils.sureArray(domain);
+		const domains = arrify(domain);
 		const {challengeType, renew} = opts;
 
 		// Check in-memory cache of certificates for the named domain
-		return this.le.check({domains: domains}).then(results => {
-			if (results && !renew) {
-				return results;
-			}
-
-			// Register Certificate manually
-			this.log.info('Manually registering certificate for %s', domain);
-			return this.le.register({
+		return this.le.check({domains: domains}).then(cert => {
+			const options = {
 				domains: [domain],
 				email,
 				agreeTos: true,
 				rsaKeySize: 2048,           // 2048 or higher
 				challengeType               // http-01, tls-sni-01, or dns-01
-			}).catch(err => {
-				this.log.error(err, 'Registering LetsEncrypt certificates');
-			});
+			};
+
+			if (cert) {
+				if (renew) {
+					this.log.info('Renewing cert for %s', domain);
+					options.duplicate = true;
+					return this.le.renew(options, cert).catch(err => {
+						this.log.error(err, 'Error renewing certificates for %s', domain);
+					});
+				} else {
+					this.log.info('Using cached cert for %s', domain);
+					return cert;
+				}
+			} else {
+				// Register Certificate manually
+				this.log.info('Manually registering certificate for %s', domain);
+				return this.le.register(options).catch(err => {
+					this.log.error(err, 'Error registering LetsEncrypt certificates');
+				});
+			}
 		});
 	}
 }

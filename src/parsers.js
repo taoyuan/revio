@@ -45,7 +45,7 @@ function tryModules(names, loader) {
 }
 
 const NOT_FOUND = `
-WARNING: Evoxy parser "${chalk.blue('%s')}" is not installed as any of the following modules:
+WARNING: Revio parser "${chalk.blue('%s')}" is not installed as any of the following modules:
 		 
 ${chalk.green('%s')}
 		 

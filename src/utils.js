@@ -6,6 +6,7 @@ const path = require('path');
 const tls = require('tls');
 const validUrl = require('valid-url');
 const parseUrl = require('url-parse');
+const arrify = require('arrify');
 
 const regIpAddress = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
 const regHostname = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$/;
@@ -29,7 +30,10 @@ function sureArray(value) {
 }
 exports.sureArray = sureArray;
 
-function shouldRedirectToHttps(certs, src, target) {
+function shouldRedirectToHttps(certs, src, target, excludes) {
+	if (excludes && arrify(excludes).includes(target.host)) {
+		return false;
+	}
 	return certs && src in certs && target.sslRedirect;
 }
 exports.shouldRedirectToHttps = shouldRedirectToHttps;
@@ -40,7 +44,8 @@ exports.shouldRedirectToHttps = shouldRedirectToHttps;
 function redirectToHttps(req, res, target, ssl, log) {
 	req.url = req._url || req.url; // Get the original url since we are going to redirect.
 
-	const hostname = req.headers.host.split(':')[0] + ':' + (ssl.redirectPort || ssl.port);
+	const port = ssl.redirectPort || ssl.port;
+	const hostname = req.headers.host.split(':')[0] + (port ? ':' + port : '');
 	const url = 'https://' + path.join(hostname, req.url);
 	const from = path.join(req.headers.host, req.url);
 	log && log.info(`Redirecting ${from} to ${url}`);
@@ -144,7 +149,8 @@ function prepareUrl(url) {
 		if (url.hostname) {
 			if (!url.pathname) {
 				url.pathname = '/';
-				if (url.href[url.href.length - 1] !== '/') {}
+				if (url.href[url.href.length - 1] !== '/') {
+				}
 				url.href += '/';
 			}
 		}

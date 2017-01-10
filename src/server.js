@@ -17,8 +17,10 @@ const Logger = require('./logger');
 const Les = require('./les');
 const Resolvers = require('./resolvers');
 const utils = require('./utils');
+const arrify = require("arrify");
 
-const ONE_DAY = 60 * 60 * 24 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
+const ONE_DAY = 24 * ONE_HOUR;
 const ONE_MONTH = ONE_DAY * 30;
 
 let respondNotFound = function (req, res) {
@@ -62,7 +64,7 @@ class Server {
 				return null;
 			}
 
-			routeObject.urls = (_.isArray(route.url) ? route.url : [route.url]).map(url => {
+			routeObject.urls = arrify(route.url).map(url => {
 				return Server.buildTarget(url, route.opts || {});
 			});
 
@@ -102,7 +104,7 @@ class Server {
 		opts.port = opts.port || 8080;
 
 		if (opts.letsencrypt) {
-			this.setupLetsEncrypt(opts);
+			this.setupLetsEncrypt(opts.letsencrypt);
 		}
 
 		if (opts.resolvers) {
@@ -113,7 +115,7 @@ class Server {
 		// Create a proxy server with custom application logic
 		//
 		const proxy = this.proxy = httpProxy.createProxyServer({
-			xfwd: (opts.xfwd != false),
+			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
 			/*
@@ -124,7 +126,7 @@ class Server {
 		});
 
 		proxy.on('proxyReq', (p, req) => {
-			if (req.host != null) {
+			if (!_.isNil(req.host)) {
 				p.setHeader('host', req.host);
 			}
 		});
@@ -143,7 +145,7 @@ class Server {
 		// Optionally create an https proxy server.
 		//
 		if (opts.ssl) {
-			this.setupHttpsProxy();
+			arrify(opts.ssl).forEach(o => this.setupHttpsProxy(o));
 		}
 
 		//
@@ -157,8 +159,6 @@ class Server {
 			//
 			// Send a 500 http status if headers have been sent
 			//
-			console.log(err);
-
 			if (err.code === 'ECONNREFUSED') {
 				res.writeHead && res.writeHead(502);
 			} else if (!res.headersSent) {
@@ -179,7 +179,7 @@ class Server {
 			res.end(err.code)
 		});
 
-		this.log.info('Started a Evoxy reverse proxy server on port %s', opts.port);
+		this.log.info('Started a Revio reverse proxy server on port %s', opts.port);
 	}
 
 	_setupCluster(opts) {
@@ -212,7 +212,7 @@ class Server {
 		const route = this.resolve(src, url);
 
 		if (!route) {
-			this.log.warn({src: src, url: req.url}, 'no valid route found for given source');
+			this.log.warn({src, url}, 'no valid route found for given source');
 			return;
 		}
 
@@ -256,13 +256,14 @@ class Server {
 	};
 
 	setupLetsEncrypt(opts) {
-		if (!opts.letsencrypt.path) {
+		if (!opts.path) {
 			throw Error('Missing certificate path for Lets Encrypt');
 		}
-		this.les = new Les(opts.letsencrypt, this.log);
-		const letsencryptPort = opts.letsencrypt.port || 3000;
-		const challengeResolver = Resolvers.challenge(letsencryptPort);
-		challengeResolver.priority = 9999;
+		opts.port = opts.port || 3000;
+		this.les = new Les(opts, this.log);
+		this.letsencryptHost = '127.0.0.1:' + opts.port;
+		const url = 'http://' + this.letsencryptHost;
+		const challengeResolver = Resolvers.challenge(url, 9999);
 		this.addResolver(challengeResolver);
 	};
 
@@ -272,7 +273,7 @@ class Server {
 			const src = utils.getSource(req);
 			const target = this._getTarget(src, req);
 			if (target) {
-				if (utils.shouldRedirectToHttps(this.certs, src, target)) {
+				if (utils.shouldRedirectToHttps(this.certs, src, target, [this.letsencryptHost])) {
 					utils.redirectToHttps(req, res, target, opts.ssl, this.log);
 				} else {
 					proxy.web(req, res, {target: target});
@@ -287,16 +288,13 @@ class Server {
 		// WebSocket requests as well.
 		//
 		httpServer.on('upgrade', _websocketsUpgrade);
-
-		httpServer.on('error', err => {
-			this.log.error(err, 'Server Error');
-		});
+		httpServer.on('error', err => this.log.error(err, 'Server Error'));
 
 		return httpServer;
 	}
 
-	setupHttpsProxy() {
-		const {proxy, opts, _websocketsUpgrade} = this;
+	setupHttpsProxy(opts) {
+		const {proxy, _websocketsUpgrade} = this;
 		const certs = this.certs = {};
 		const sni = this.les && this.les.le.sni;
 
@@ -310,21 +308,21 @@ class Server {
 			//
 			// Default certs for clients that do not support SNI.
 			//
-			key: utils.getCertData(opts.ssl.key) || undefined,
-			cert: utils.getCertData(opts.ssl.cert) || undefined
+			key: utils.getCertData(opts.key) || undefined,
+			cert: utils.getCertData(opts.cert) || undefined
 		};
 
-		if (opts.ssl.ca) {
-			options.ca = utils.getCertData(opts.ssl.ca, true);
+		if (opts.ca) {
+			options.ca = utils.getCertData(opts.ca, true);
 		}
 
-		if (opts.ssl.opts) {
-			options = _.defaults(options, opts.ssl.opts);
+		if (opts.opts) {
+			options = _.defaults(options, opts.opts);
 		}
 
-		const https = opts.ssl.http2 ? require('spdy') : require('https');
+		const https = opts.http2 ? require('spdy') : require('https');
 		if (_.isObject(opts.http2)) {
-			opts.ssl.spdy = opts.ssl.http2;
+			opts.spdy = opts.http2;
 		}
 
 		options = _.defaults(options, require('localhost.daplie.com-certificates').merge({}));
@@ -344,9 +342,9 @@ class Server {
 		httpsServer.on('error', err => this.log.error(err, 'HTTPS Server Error'));
 		httpsServer.on('clientError', err => this.log.error(err, 'HTTPS Client  Error'));
 
-		this.log.info('Listening to HTTPS requests on port %s', opts.ssl.port);
+		this.log.info('Listening to HTTPS requests on port %s', opts.port);
 
-		httpsServer.listen(opts.ssl.port);
+		httpsServer.listen(opts.port, opts.ip);
 	}
 
 	addResolver(resolver) {
@@ -467,7 +465,7 @@ class Server {
 				//
 				const timeBeforeExpiration = opts.letsencrypt.expireBefore || ONE_MONTH;
 				let renewTime = (certs.expiresAt - Date.now()) - timeBeforeExpiration;
-				renewTime = renewTime > 0 ? renewTime : 60 * 1000;
+				renewTime = renewTime > 0 ? renewTime : opts.letsencrypt.minRenewTime || ONE_HOUR;
 
 				this.log.info('Renewal of %s in %s days', domain, Math.floor(renewTime / ONE_DAY));
 
