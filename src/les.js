@@ -67,7 +67,7 @@ class Les {
 				'tls-sni-01': leSniChallenge,
 			},
 			log: function () {
-				log.info('Lets encrypt debugger', arguments)
+				log.info(arguments, 'Lets encrypt debugger');
 			}
 		});
 	}
