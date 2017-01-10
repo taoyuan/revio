@@ -467,13 +467,15 @@ class Server {
 				//
 				const timeBeforeExpiration = opts.letsencrypt.expireBefore || ONE_MONTH;
 				let renewTime = (certs.expiresAt - Date.now()) - timeBeforeExpiration;
-				renewTime = renewTime > 0 ? renewTime : 0;
+				renewTime = renewTime > 0 ? renewTime : 60 * 1000;
 
 				this.log.info('Renewal of %s in %s days', domain, Math.floor(renewTime / ONE_DAY));
 
 				this.certs[domain].renewalTimeout = safe.setTimeout(renewCertificate, renewTime);
 			} else {
+				//
 				// TODO: Try again, but we need an exponential backof to avoid getting banned.
+				//
 			}
 		}, err => console.error('Getting LetsEncrypt certificates', err));
 	};
