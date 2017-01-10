@@ -1,6 +1,6 @@
 {
   "name": "revio",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "A reverse proxy server",
   "license": "MIT",
   "repository": "taoyuan/revio",
