@@ -98,7 +98,7 @@ routes:
 
 ### Programmatical example
 
-`revio` export `Server` as `ReverseProxy` in `redbird`
+`revio` export `Server` as `ReverseProxy` in `revio`
 
 ```js
 const Server = require('revio').Server;
