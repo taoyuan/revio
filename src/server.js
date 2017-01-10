@@ -259,7 +259,7 @@ class Server {
 		if (!opts.path) {
 			throw Error('Missing certificate path for Lets Encrypt');
 		}
-		opts.port = opts.port || 3000;
+		opts.port = opts.port || 9999;
 		this.les = new Les(opts, this.log);
 		this.letsencryptHost = '127.0.0.1:' + opts.port;
 		const url = 'http://' + this.letsencryptHost;

@@ -32,10 +32,9 @@ class Les {
 
 	_initLetsEncrypt() {
 		// Storage Backend
-		const {certs, debug, prod, challengeType} = this.opts;
+		const {certs: configDir, debug, prod, challengeType} = this.opts;
 
 		const store = require('le-store-certbot').create({
-			configDir: certs,
 			privkeyPath: ':configDir/:hostname/privkey.pem',
 			fullchainPath: ':configDir/:hostname/fullchain.pem',
 			certPath: ':configDir/:hostname/cert.pem',
@@ -44,15 +43,13 @@ class Les {
 			workDir: ':configDir/letsencrypt/const/lib',
 			logsDir: ':configDir/letsencrypt/const/log',
 
-			webrootPath: webrootPath,
-			debug: debug
+			configDir,
+			webrootPath,
+			debug
 		});
 
 		// ACME Challenge Handlers
-		const leFsChallenge = require('le-challenge-fs').create({
-			webrootPath: webrootPath,
-			debug: debug
-		});
+		const leFsChallenge = require('le-challenge-fs').create({webrootPath, debug});
 
 		const leSniChallenge = require('le-challenge-sni').create({debug});
 		const server = prod ? LE.productionServerUrl : LE.stagingServerUrl;
@@ -68,8 +65,8 @@ class Les {
 				'http-01': leFsChallenge,  				// handles /.well-known/acme-challege keys and tokens
 				'tls-sni-01': leSniChallenge,
 			},
-			log: function (debug) {
-				console.log('Lets encrypt debugger', arguments)
+			log: function () {
+				this.log.info('Lets encrypt debugger', arguments)
 			}
 		});
 	}
