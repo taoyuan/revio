@@ -28,8 +28,7 @@ class Certifier {
 		opts.prod = opts.prod || opts.production;
 		opts.challengeType = opts.challengeType || opts.challenge;
 
-		// domain placeholder for letsencrypt approveDomains to avoid throw "not properly configured" exception
-		this.approvedDomains = ['-'];
+		this.approvedDomains = [];
 
 		this._initLetsEncrypt();
 		this._initServer();
@@ -63,9 +62,6 @@ class Certifier {
 		this.log.info({server, challengeType, debug}, 'Initiating Lets Encrypt');
 
 		this.le = LE.create({
-			email,															// for approveDomains
-			agreeTos,														// for approveDomains
-			approveDomains: approvedDomains,		// for approveDomains
 			debug,
 			server,
 			store,                     					// handles saving of config, accounts, and certificates
@@ -76,7 +72,10 @@ class Certifier {
 			},
 			log: function () {
 				log.info(arguments, 'Lets encrypt debugger');
-			}
+			},
+			email,															// for approveDomains
+			agreeTos,														// for approveDomains
+			approveDomains: (...args) => this.approveDomains(...args)
 		});
 	}
 
@@ -105,10 +104,27 @@ class Certifier {
 		}).listen(port);
 	}
 
-	approveDomain(domain) {
+	addDomain(domain) {
 		if (_.isString(domain) && !this.approvedDomains.includes(domain)) {
 			this.approvedDomains.push(domain);
 		}
+	}
+
+	approveDomains(lexOpts, certs, cb) {
+		const {le, approvedDomains} = this;
+		if (!(le.email && le.agreeTos)) {
+			throw new Error("le-sni-auto is not properly configured.");
+		}
+		if (lexOpts.domains.every(function (domain) {
+				return -1 !== approvedDomains.indexOf(domain);
+			})) {
+			lexOpts.domains = approvedDomains.slice(0);
+			lexOpts.email = le.email;
+			lexOpts.agreeTos = le.agreeTos;
+			return cb(null, {options: lexOpts, certs: certs});
+		}
+		this.log.debug('unapproved domain', lexOpts.domains, approvedDomains);
+		cb(new Error("unapproved domain"));
 	}
 
 	/**

@@ -413,7 +413,7 @@ class Server {
 							console.error('Missing certificate path for Lets Encrypt');
 							return;
 						}
-						this.certifier.approveDomain(src.hostname);
+						this.certifier.addDomain(src.hostname);
 						this.log.info('Getting Lets Encrypt certificates for %s', src.hostname);
 						this.updateCertificates(src.hostname, ssl.letsencrypt.email, ssl.letsencrypt.production);
 					} else {
