@@ -342,7 +342,7 @@ class Server {
 		httpsServer.on('error', err => this.log.error(err, 'HTTPS Server Error'));
 		httpsServer.on('clientError', (err, socket) => {
 			if (err.code === 'ECONNRESET') {
-				this.log.warn('Connection closed by client. end this socket');
+				this.log.warn('Connection closed by client.');
 				return socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 			}
 			this.log.error(err, 'HTTPS Client Error');
