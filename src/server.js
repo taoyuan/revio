@@ -104,7 +104,7 @@ class Server {
 		opts.port = opts.port || 8080;
 
 		if (opts.letsencrypt) {
-			this.setupLetsEncrypt(opts.letsencrypt);
+			this.setupCertifier(opts.letsencrypt);
 		}
 
 		if (opts.resolvers) {
@@ -255,7 +255,7 @@ class Server {
 		return target;
 	};
 
-	setupLetsEncrypt(opts) {
+	setupCertifier(opts) {
 		if (!opts.path) {
 			throw Error('Missing certificate path for Lets Encrypt');
 		}
@@ -345,7 +345,7 @@ class Server {
 				this.log.warn('Connection closed by client.');
 				return socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 			}
-			this.log.error(err, 'HTTPS Client Error');
+			this.log.warn(err, 'HTTPS Client Error');
 		});
 
 		this.log.info('Listening to HTTPS requests on port %s', opts.port);

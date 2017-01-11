@@ -35,7 +35,7 @@ class Certifier {
 	}
 
 	_initLetsEncrypt() {
-		const {log, approvedDomains} = this;
+		const {log} = this;
 		// Storage Backend
 		const {certs: configDir, debug, prod, challengeType, email, agreeTos} = this.opts;
 
@@ -70,9 +70,7 @@ class Certifier {
 				'http-01': leFsChallenge,  				// handles /.well-known/acme-challege keys and tokens
 				'tls-sni-01': leSniChallenge,
 			},
-			log: function () {
-				log.info(arguments, 'Lets encrypt debugger');
-			},
+			log: (...args) => log.info(...args, 'Lets encrypt debugger'),
 			email,															// for approveDomains
 			agreeTos,														// for approveDomains
 			approveDomains: (...args) => this.approveDomains(...args)
@@ -115,9 +113,7 @@ class Certifier {
 		if (!(le.email && le.agreeTos)) {
 			throw new Error("le-sni-auto is not properly configured.");
 		}
-		if (lexOpts.domains.every(function (domain) {
-				return -1 !== approvedDomains.indexOf(domain);
-			})) {
+		if (lexOpts.domains.every(domain => approvedDomains.includes(domain))) {
 			lexOpts.domains = approvedDomains.slice(0);
 			lexOpts.email = le.email;
 			lexOpts.agreeTos = le.agreeTos;
