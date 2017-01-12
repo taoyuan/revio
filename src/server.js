@@ -204,7 +204,8 @@ class Server {
 			try {
 				this._proxy.ws(req, socket, head, {target: target});
 			} catch (e) {
-				this.log.warn(e, 'Proxy ws error')
+				this.log.warn(e, 'Proxy ws error');
+				return socket.end();
 			}
 		} else {
 			respondNotFound(req, socket);
@@ -283,7 +284,8 @@ class Server {
 					try {
 						_proxy.web(req, res, {target});
 					} catch (e) {
-						this.log.warn(e, 'Proxy web error')
+						this.log.warn(e, 'Proxy web error');
+						return res.end();
 					}
 				}
 			} else {
@@ -304,14 +306,18 @@ class Server {
 	setupHttpsProxy(opts) {
 		const {_proxy, _websocketsUpgrade} = this;
 		const certs = this.certs = {};
-		const sni = this.certifier && this.certifier.le.sni;
+		const sni = _.get(this.certifier, 'le.sni');
 
 		let options = {
-			SNICallback: function (hostname, cb) {
-				if (!certs[hostname] && sni) {
+			SNICallback: (hostname, cb) => {
+				this.log.debug('sni callback for host:', hostname);
+				if (certs[hostname]) {
+					return PromiseA.resolve(certs[hostname]).nodeify(cb);
+				}
+				if (sni) {
 					return PromiseA.fromCallback(cb => sni.sniCallback(hostname, cb)).nodeify(cb);
 				}
-				return PromiseA.resolve(certs[hostname]).nodeify(cb);
+				cb();
 			},
 			//
 			// Default certs for clients that do not support SNI.
@@ -343,7 +349,8 @@ class Server {
 				try {
 					_proxy.web(req, res, {target});
 				} catch (e) {
-					this.log.warn(e, 'Proxy web error')
+					this.log.warn(e, 'Proxy web error');
+					return res.end();
 				}
 			} else {
 				respondNotFound(req, res);
@@ -355,9 +362,9 @@ class Server {
 		httpsServer.on('clientError', (err, socket) => {
 			if (err.code === 'ECONNRESET') {
 				this.log.warn('Connection closed by client.');
-				return socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 			}
 			this.log.warn(err, 'HTTPS Client Error');
+			return socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 		});
 
 		this.log.info('Listening to HTTPS requests on port %s', opts.port);
