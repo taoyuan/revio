@@ -49,7 +49,8 @@ class Certifier {
 			logsDir: ':configDir/letsencrypt/const/log',
 
 			configDir,
-			webrootPath,	debug
+			webrootPath,
+			debug
 		});
 
 		// ACME Challenge Handlers
