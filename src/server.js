@@ -174,7 +174,7 @@ class Server {
 
 			// Exit program for EMFILE temporary, and restart using PM2.
 			// TODO Should not have EMFILE error, dig it ...
-			if (err.code = 'EMFILE') {
+			if (err.code === 'EMFILE') {
 				console.log('----------------------');
 				return process.exit(1);
 			}
