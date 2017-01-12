@@ -98,18 +98,21 @@ exports.unbundleCert = unbundleCert;
 function getCertData(pathname, unbundle) {
 	// TODO: Support input as Buffer, Stream or Pathname.
 
-	if (pathname) {
-		if (_.isArray(pathname)) {
-			const pathnames = pathname;
-			return _.flatten(_.map(pathnames, function (_pathname) {
-				return getCertData(_pathname, unbundle);
-			}));
-		} else if (fs.existsSync(pathname)) {
+	if (!pathname) return;
+
+	if (_.isArray(pathname)) {
+		return _.flatten(pathname.map(p => getCertData(p, unbundle)));
+	}
+
+	if (fs.existsSync(pathname) && fs.lstatSync(pathname).isFile()) {
+		try {
 			if (unbundle) {
 				return unbundleCert(fs.readFileSync(pathname, 'utf8'));
 			} else {
 				return fs.readFileSync(pathname, 'utf8');
 			}
+		} catch (e) {
+			console.warn(e);
 		}
 	}
 }
