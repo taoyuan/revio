@@ -3,7 +3,7 @@
 const assert = require('assert');
 const tls = require('tls');
 const http = require('http');
-const httpProxy = require('http-proxy');
+const HttpProxy = require('http-proxy');
 const path = require('path');
 const _ = require('lodash');
 const cluster = require('cluster');
@@ -114,7 +114,7 @@ class Server {
 		//
 		// Create a proxy server with custom application logic
 		//
-		const proxy = this.proxy = httpProxy.createProxyServer({
+		const _proxy = this._proxy = HttpProxy.createProxyServer({
 			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
@@ -125,7 +125,7 @@ class Server {
 			 */
 		});
 
-		proxy.on('proxyReq', (p, req) => {
+		_proxy.on('proxyReq', (p, req) => {
 			if (!_.isNil(req.host)) {
 				p.setHeader('host', req.host);
 			}
@@ -135,7 +135,7 @@ class Server {
 		// Support NTLM auth
 		//
 		if (opts.ntlm) {
-			proxy.on('proxyRes', proxyRes => {
+			_proxy.on('proxyRes', proxyRes => {
 				const key = 'www-authenticate';
 				proxyRes.headers[key] = proxyRes.headers[key] && proxyRes.headers[key].split(',');
 			});
@@ -155,7 +155,7 @@ class Server {
 
 		httpServer.listen(opts.port);
 
-		proxy.on('error', (err, req, res) => {
+		_proxy.on('error', (err, req, res) => {
 			//
 			// Send a 500 http status if headers have been sent
 			//
@@ -201,7 +201,11 @@ class Server {
 		const target = this._getTarget(src, req);
 		this.log.info({headers: req.headers, target: target}, 'upgrade to websockets');
 		if (target) {
-			this.proxy.ws(req, socket, head, {target: target});
+			try {
+				this._proxy.ws(req, socket, head, {target: target});
+			} catch (e) {
+				this.log.warn(e, 'Proxy ws error')
+			}
 		} else {
 			respondNotFound(req, socket);
 		}
@@ -268,7 +272,7 @@ class Server {
 	};
 
 	setupHttpProxy() {
-		const {proxy, opts, _websocketsUpgrade} = this;
+		const {_proxy, opts, _websocketsUpgrade} = this;
 		const httpServer = this.httpServer = http.createServer((req, res) => {
 			const src = utils.getSource(req);
 			const target = this._getTarget(src, req);
@@ -276,7 +280,11 @@ class Server {
 				if (utils.shouldRedirectToHttps(this.certs, src, target, [this.letsencryptHost])) {
 					utils.redirectToHttps(req, res, target, opts.ssl, this.log);
 				} else {
-					proxy.web(req, res, {target: target});
+					try {
+						_proxy.web(req, res, {target});
+					} catch (e) {
+						this.log.warn(e, 'Proxy web error')
+					}
 				}
 			} else {
 				respondNotFound(req, res);
@@ -294,7 +302,7 @@ class Server {
 	}
 
 	setupHttpsProxy(opts) {
-		const {proxy, _websocketsUpgrade} = this;
+		const {_proxy, _websocketsUpgrade} = this;
 		const certs = this.certs = {};
 		const sni = this.certifier && this.certifier.le.sni;
 
@@ -332,7 +340,11 @@ class Server {
 
 			const target = this._getTarget(src, req);
 			if (target) {
-				proxy.web(req, res, {target: target});
+				try {
+					_proxy.web(req, res, {target});
+				} catch (e) {
+					this.log.warn(e, 'Proxy web error')
+				}
 			} else {
 				respondNotFound(req, res);
 			}
