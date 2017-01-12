@@ -119,8 +119,9 @@ class Certifier {
 			lexOpts.agreeTos = le.agreeTos;
 			return cb(null, {options: lexOpts, certs: certs});
 		}
-		this.log.debug('unapproved domain', lexOpts.domains, approvedDomains);
-		cb(new Error("unapproved domain"));
+		this.log.warn('unapproved domain', lexOpts.domains, approvedDomains);
+		throw new Error("unapproved domain");
+		// cb(new Error("unapproved domain"));
 	}
 
 	/**
