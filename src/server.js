@@ -118,7 +118,9 @@ class Server {
 			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
-			agent  : http.globalAgent,
+			// Disable the http Agent of the http-proxy library so we force
+			// the proxy to close the connection after each request to the backend
+			agent: false
 			/*
 			 agent: new http.Agent({
 			 keepAlive: true
