@@ -118,6 +118,7 @@ class Server {
 			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
+			agent  : http.globalAgent,
 			/*
 			 agent: new http.Agent({
 			 keepAlive: true
