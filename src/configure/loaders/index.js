@@ -19,6 +19,7 @@ exports.extensions = _.transform(loaders, (result, loader, name) => {
 exports.load = function (file, context) {
 	const ext = path.extname(file).substr(1);
 	const loader = exports.extensions[ext];
-	const template = Handlebars.compile(fs.readFileSync(file, 'utf8'));
+	const data = fs.readFileSync(file, 'utf8');
+	const template = Handlebars.compile(data);
 	return loader.load(template(context));
 };

@@ -120,8 +120,7 @@ class Certifier {
 			return cb(null, {options: lexOpts, certs: certs});
 		}
 		this.log.warn('unapproved domain', lexOpts.domains, approvedDomains);
-		throw new Error("unapproved domain");
-		// cb(new Error("unapproved domain"));
+		cb(new Error("unapproved domain"));
 	}
 
 	/**

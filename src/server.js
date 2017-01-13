@@ -118,14 +118,11 @@ class Server {
 			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
+			// https://github.com/hipache/hipache/blob/2d3676638f8b4b1758d70a8dffde1bef88eacf32/lib/worker.js#L77
 			// Disable the http Agent of the http-proxy library so we force
 			// the proxy to close the connection after each request to the backend
-			agent: false
-			/*
-			 agent: new http.Agent({
-			 keepAlive: true
-			 })
-			 */
+			// agent: false
+			agent: new http.Agent()
 		});
 
 		_proxy.on('proxyReq', (p, req) => {
@@ -265,7 +262,7 @@ class Server {
 			req.host = target.host;
 		}
 
-		this.log.info('Proxying %s to %s', src + url, path.join(target.host, req.url));
+		this.log.debug('Proxying %s to %s', src + url, path.join(target.host, req.url));
 
 		return target;
 	};
@@ -320,11 +317,11 @@ class Server {
 
 		let options = {
 			SNICallback: (hostname, cb) => {
-				this.log.debug('sni callback for host:', hostname);
 				if (certs[hostname]) {
 					return PromiseA.resolve(certs[hostname]).nodeify(cb);
 				}
-				if (sni) {
+				if (sni && hostname && hostname.endsWith('.acme.invalid')) {
+					this.log.info('Perform Letsencrypt SNI challenge for host', hostname);
 					return PromiseA.fromCallback(cb => sni.sniCallback(hostname, cb)).nodeify(cb);
 				}
 				cb();
