@@ -5,9 +5,10 @@ const http = require('http');
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
+const PromiseA = require('bluebird');
 const LE = require('letsencrypt');
-const utils = require('./utils');
 const arrify = require("arrify");
+const utils = require('./utils');
 
 const webrootPath = ':configDir/:hostname/.well-known/acme-challenge';
 
@@ -87,18 +88,23 @@ class Certifier {
 			const uri = url.parse(req.url).pathname;
 			const filename = path.join(certs, uri);
 
-			this.log.info('LetsEncrypt CA trying to validate challenge %s', filename);
+			this.log.info({filename, uri}, 'LetsEncrypt CA trying to validate challenge');
 
-			fs.exists(filename, function (exists) {
-				if (!exists) {
+			PromiseA.fromCallback(cb => fs.lstat(filename, cb)).then(stats => {
+				if (stats && stats.isFile()) {
+					res.writeHead(200);
+					fs.createReadStream(filename, "binary").pipe(res);
+				} else {
 					res.writeHead(404, {"Content-Type": "text/plain"});
 					res.write("404 Not Found\n");
-					return res.end();
+					res.end();
 				}
-
-				res.writeHead(200);
-				fs.createReadStream(filename, "binary").pipe(res);
+			}).catch(() => {
+				res.writeHead(404, {"Content-Type": "text/plain"});
+				res.write("404 Not Found\n");
+				res.end();
 			});
+
 		}).listen(port);
 	}
 

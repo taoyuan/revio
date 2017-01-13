@@ -248,7 +248,7 @@ class Server {
 		const target = route.urls[j];
 
 		//
-		// Fix request url if targetname specified.
+		// Fix request url if target name specified.
 		//
 		if (target.pathname) {
 			req.url = path.join(target.pathname, req.url);
@@ -262,7 +262,7 @@ class Server {
 			req.host = target.host;
 		}
 
-		this.log.debug('Proxying %s to %s', src + url, path.join(target.host, req.url));
+		this.log.info('Proxying %s to %s', src + url, path.join(target.host, req.url));
 
 		return target;
 	};
