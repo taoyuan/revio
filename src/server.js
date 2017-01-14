@@ -118,11 +118,9 @@ class Server {
 			xfwd: (opts.xfwd !== false),
 			prependPath: false,
 			secure: (opts.secure !== false),
-			// https://github.com/hipache/hipache/blob/2d3676638f8b4b1758d70a8dffde1bef88eacf32/lib/worker.js#L77
-			// Disable the http Agent of the http-proxy library so we force
-			// the proxy to close the connection after each request to the backend
-			// agent: false
-			agent: new http.Agent()
+			agent: new http.Agent({
+				maxSockets: 512
+			})
 		});
 
 		_proxy.on('proxyReq', (p, req) => {
