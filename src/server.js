@@ -365,11 +365,8 @@ class Server {
 		httpsServer.on('upgrade', _websocketsUpgrade);
 		httpsServer.on('error', err => this.log.error(err, 'HTTPS Server Error'));
 		httpsServer.on('clientError', (err, socket) => {
-			if (err.code === 'ECONNRESET') {
-				this.log.warn('Connection Reset');
-			} else {
-				this.log.warn(err, 'HTTPS Client Error');
-			}
+			this.log.warn('HTTPS Client Error:', err.message);
+			this.log.debug(err, 'Error Detail:');
 			return socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
 		});
 
