@@ -119,8 +119,8 @@ class Server {
 			prependPath: false,
 			secure: (opts.secure !== false),
 			agent: new http.Agent({
-				keepAlive: _.has(opts, 'keepAlive') ? opts.keepAlive : true,
-				maxSockets: 1024
+				// keepAlive: _.has(opts, 'keepAlive') ? opts.keepAlive : true,
+				// maxSockets: 1024
 			})
 		});
 
