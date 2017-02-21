@@ -120,7 +120,7 @@ class Server {
 			secure: (opts.secure !== false),
 			agent: new http.Agent({
 				keepAlive: _.has(opts, 'keepAlive') ? opts.keepAlive : true,
-				maxSockets: 512
+				maxSockets: 1024
 			})
 		});
 
