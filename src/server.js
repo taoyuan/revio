@@ -345,7 +345,7 @@ class Server {
 			opts.spdy = opts.http2;
 		}
 
-		options = _.defaults(options, require('localhost.daplie.com-certificates').merge({}));
+		options = _.defaults(options, require('localhost.daplie.me-certificates').merge({}));
 
 		const httpsServer = this.httpsServer = https.createServer(options, (req, res) => {
 			const src = utils.getSource(req);

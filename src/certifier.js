@@ -6,7 +6,7 @@ const path = require('path');
 const url = require('url');
 const fs = require('fs');
 const PromiseA = require('bluebird');
-const LE = require('letsencrypt');
+const LE = require('greenlock');
 const arrify = require("arrify");
 const utils = require('./utils');
 
