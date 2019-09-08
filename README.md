@@ -2,7 +2,7 @@
 [![NPM version](http://img.shields.io/npm/v/revio.svg?style=flat-square)](https://www.npmjs.com/package/revio)
 [![NPM downloads](http://img.shields.io/npm/dm/revio.svg?style=flat-square)](https://www.npmjs.com/package/revio)
 [![Build Status](http://img.shields.io/travis/taoyuan/revio/master.svg?style=flat-square)](https://travis-ci.org/taoyuan/revio)
-[![Coverage Status](https://img.shields.io/coveralls/taoyuan/revio.svg?style=flat-square)](https://coveralls.io/taoyuan/revio)
+[![Coverage Status](https://img.shields.io/coveralls/taoyuan/revio.svg?style=flat-square)](https://coveralls.io/taoyuan/revio) [![Greenkeeper badge](https://badges.greenkeeper.io/taoyuan/revio.svg)](https://greenkeeper.io/)
 
 
 > A Reverse Proxy Server.  
